@@ -168,14 +168,16 @@ function findSections(achievement, sections) {
     const titleText = s.title.toLowerCase();
     const allText = titleText + ' ' + (s.body || '');
 
-    // Title matches (weighted 3x)
+    // Title matches (weighted 5x)
     for (const w of words) {
-      if (titleText.includes(w)) score += w.length * 3;
+      if (titleText.includes(w)) score += w.length * 5;
     }
 
-    // Body matches
-    for (const w of words) {
-      if (s.body && s.body.includes(w)) score += w.length;
+    // Body matches — only if there's already a title or phrase match
+    if (score > 0 || phrases.some(p => titleText.includes(p) || (s.body && s.body.includes(p)))) {
+      for (const w of words) {
+        if (s.body && s.body.includes(w)) score += w.length;
+      }
     }
 
     // Phrase matches in title (weighted 5x - very strong signal)
@@ -198,8 +200,8 @@ function findSections(achievement, sections) {
     return { ...s, score };
   }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
 
-  // Minimum score threshold to avoid false positives
-  if (scored.length === 0 || scored[0].score < 4) return [];
+  // Minimum score threshold
+  if (scored.length === 0 || scored[0].score < 8) return [];
 
   // If the top match has a very high score, only return it
   if (scored[0].score > 30) return scored.slice(0, 1);
@@ -211,13 +213,16 @@ function findSections(achievement, sections) {
 function injectAchievements(md, achievements, sections) {
   const lines = md.split('\n');
   const injections = {}; // line number → array of strings to insert
+  const unmatched = [];
 
   for (const ach of achievements) {
     const matches = findSections(ach, sections);
-    if (matches.length === 0) continue;
+    if (matches.length === 0) {
+      unmatched.push(ach);
+      continue;
+    }
 
     const best = matches[0];
-    // Insert after the section heading line (which is after the anchor)
     const injectLine = best.line + 1;
 
     if (!injections[injectLine]) injections[injectLine] = [];
@@ -229,22 +234,37 @@ function injectAchievements(md, achievements, sections) {
 
   // Build output with injections in reverse line order
   for (const lnum of Object.keys(injections).sort((a, b) => b - a)) {
-    const inserts = injections[lnum];
-    lines.splice(lnum, 0, '', ...inserts, '');
+    lines.splice(lnum, 0, '', ...injections[lnum], '');
+  }
+
+  // Append unmatched achievements at the end
+  if (unmatched.length > 0) {
+    lines.push('', '<a id="s-achievements"></a>', '', '## RetroAchievements', '');
+    lines.push('These achievements could not be matched to a specific walkthrough section:');
+    lines.push('');
+    for (const ach of unmatched.sort((a, b) => b.points - a.points)) {
+      const medal = ach.points >= 25 ? '🏅' : ach.points >= 10 ? '🥈' : '🥉';
+      lines.push('- ' + medal + ' **' + ach.title + '** — ' + ach.description + ' _(· ' + ach.points + ' pts)_');
+    }
+    lines.push('');
   }
 
   // Add summary at the top
   const totalPts = achievements.reduce((s, a) => s + (a.points || 0), 0);
-  const matched = Object.keys(injections).length;
+  const matchedCount = achievements.length - unmatched.length;
   const summary = [
     '',
     '---',
     '',
-    '> 🏆 **RetroAchievements** — ' + matched + ' of ' + achievements.length + ' achievements matched (' + totalPts + ' total pts)',
+    '> 🏆 **RetroAchievements** — ' + matchedCount + ' matched' + (unmatched.length > 0 ? ', ' + unmatched.length + ' unmatched' : '') + ' of ' + achievements.length + ' achievements (' + totalPts + ' total pts)',
     '',
   ];
-  // Insert after the TOC section (find the last ---)
-  const tocEnd = lines.findIndex((l, i) => i > 5 && l.startsWith('---') && lines[i + 1]?.startsWith('#'));
+  // Find the next non-blank line after separator
+  const tocEnd = lines.findIndex((l, i) => {
+    if (i <= 5 || !l.startsWith('---')) return false;
+    const next = lines[i + 1], next2 = lines[i + 2];
+    return (next && next.startsWith('<')) || (next2 && next2.startsWith('<'));
+  });
   if (tocEnd > 0) {
     lines.splice(tocEnd + 1, 0, ...summary);
   }
