@@ -137,7 +137,7 @@ function anchorId(entry) {
 
 // Step 6: Generate markdown
 function generateMD(sections) {
-  let md = '# Phantasy Star IV — Complete Walkthrough\n\n';
+  let md = '# Phantasy Star IV — Guide and Walkthrough\n\n';
   md += '> By Seb Holt (Sir Pobalot) — Converted from GameFAQs\n\n';
 
   // Table of Contents
