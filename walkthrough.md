@@ -1224,6 +1224,12 @@ your trip through the basement. Pick up some MONOMATEs from the Tool Shop
 if you wish, then leave Piata. You are now outside.
 
 Enemies around Piata and Mile: Crawler, Mini Worm, MonsterFly
+
+
+```
+¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+```
+
 There is nothing to the west, so head east a little, then continue north
 until you reach a small village to the south of some quicksand. You may
 also notice that there is a castle on the other side of the quicksand.
@@ -1402,7 +1408,7 @@ Starting Level: 17   , 7-8  , 5-6  , 5-6
 
 
 ```
-¯¯¯¯¯¯¯\|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯\
+¯¯¯¯¯¯¯\|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\
 Krup    |Inn            |Per person     15 MST \
 _______/|_______________|______________________/
 ¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\
@@ -1913,7 +1919,7 @@ directly. Our first stop will be Aiedo.
 Starting Party: Gryz , Alys , Chaz , Rika , Hahn
 Starting Level: 10   , 10-11, 10-11, 1    , 10
 Enemies between Zema and Aiedo: Crawler, InfantWorm, Locusta, Mini Worm,
-¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯  MonsterFly, Scorpirus
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯  MonsterFly, Scorpirus
 
 Head a little west, then north across the bridge. There is a village called
 Nalya to the north, and you can visit it if you wish.
@@ -1952,7 +1958,7 @@ _______/|_______________|______________________/
         |             #3|ANTIDOTE       10 MST /
         |               |CURE-PARAL    120 MST \
         |_______________|______________________/
-        |¯¯¯¯¯¯��¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\
+        |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\
         |Weapon Store #1|DAGGER         40 MST|   +2 ATK                  /
         |               |STEL-SWORD    280 MST|  +14 ATK   +2 DFS         \
         |               |BOOMERANG      80 MST|   +1 ATK                  /
@@ -2744,7 +2750,7 @@ The party are not going to let the monster take the wand, so battle begins.
 
 ```
 | Gy-Laguiah            ||                    |
-|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|| Recommended Level: | 
+|¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|| Recommended Level: | 
 |  HP: 2580             ||                    |
 | EXP: 10000  MST: 1224 || Demi: 14-15       /
 |                       || Gryz: 17-18      /
@@ -5931,7 +5937,7 @@ Starting Level: 46+  , 49+  , 52+  , 45+  . 45+
 
 ```
 Recommended       |   Wren   | * Chaz * |   Rika   |   Rune   |  Fifth   |
-Equipment   |¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|
+Equipment   |¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯��¯¯¯¯¯¯¯¯|
             |Head |PALMA-RING|ALGO-RING |MOTA-RING |DEZO-RING |          |
             |Right|PULSEVULCN|ELSYDEON  |SILVR-TUSK|SILVSHIELD| See List |
             |Left | /2-HAND  | /2-HAND  |GUARD-CLAW|SILVSHIELD|  Above   |
@@ -14937,7 +14943,7 @@ _____________________________________ |__________||___________||__________|
    |¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|(| ________
    | Death |Destroy|Cleanse|  EMP  | |/ Skills \
    |   x   |   /   |   x   |   /   |(|          ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯| |
+   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯| |
    | Paralysis, Sleep & Seals?  No |(|
    |_______________________________| |_____________________________________
    |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -15929,7 +15935,7 @@ _____________________________________ |__________||___________||__________|
 
 
 ```
-¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯  |          ||           ||          |
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯  |          ||           ||          |
  D o m i n a t o r                    |   999 HP ||  4800 EXP ||  500 MST |
 _____________________________________ |__________||/¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\|
 ¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|   __________  \ May Drop SONICBUSTR /
@@ -16451,7 +16457,7 @@ _____________________________________ |__________||/¯¯¯¯¯¯¯¯¯¯¯¯¯¯
    |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯| | FISSION
    | Paralysis, Sleep & Seals? Yes |(|
    |_______________________________| |_____________________________________
-   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   |¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ```
 
 | NOTES: Uses FISSION unless there are two Gicefalgues on-screen
@@ -17205,7 +17211,7 @@ _____________________________________ |__________||___________||__________|
    |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯| | POISONMIST
    | Paralysis, Sleep & Seals? Yes |(|
    |_______________________________| |_____________________________________
-   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯
+   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ```
 
 | NOTES: Attacks with a long tongue
@@ -17473,7 +17479,7 @@ _____________________________________ |__________||___________||__________|
    |   |   |>+<|   | - |   |   |>+<| |
    |¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|(| ________
    | Death |Destroy|Cleanse|  EMP  | |/ Skills \
-   |   x   |   /   |   x   |   x   |(|          ¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   |   x   |   /   |   x   |   x   |(|          ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
    |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯| |
    | Paralysis, Sleep & Seals?  No |(|
    |_______________________________| |_____________________________________
