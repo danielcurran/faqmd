@@ -15,7 +15,7 @@ if (!USERNAME || !API_KEY) {
   process.exit(1);
 }
 
-const auth = buildAuthorization({ username: USERNAME, webApiKey: API_KEY });
+const auth = buildAuthorization({ userName: USERNAME, webApiKey: API_KEY });
 
 const inputFile = process.argv[2] || 'walkthrough.md';
 const gameArg = process.argv[3];
@@ -38,19 +38,19 @@ async function resolveGameId(arg) {
   // Also search other consoles
   const allResults = results;
   for (const g of allResults) {
-    if (g.Title && g.Title.toLowerCase().includes(arg.toLowerCase())) {
-      console.log('Found: ' + g.Title + ' (ID: ' + g.ID + ', Achievements: ' + g.NumAchievements + ')');
-      return g.ID;
+    if (g.title && g.title.toLowerCase().includes(arg.toLowerCase())) {
+      console.log('Found: ' + g.title + ' (ID: ' + g.id + ', Achievements: ' + g.numAchievements + ')');
+      return g.id;
     }
   }
 
   // Try broader search
   for (const g of allResults) {
     const words = arg.toLowerCase().split(/\s+/);
-    const title = (g.Title || '').toLowerCase();
+    const title = (g.title || '').toLowerCase();
     if (words.every(w => title.includes(w))) {
-      console.log('Partial match: ' + g.Title + ' (ID: ' + g.ID + ')');
-      return g.ID;
+      console.log('Partial match: ' + g.title + ' (ID: ' + g.id + ')');
+      return g.id;
     }
   }
 
@@ -86,8 +86,8 @@ function parseSections(md) {
 
 // Step 2: Find relevant sections for a given achievement
 function findSections(achievement, sections) {
-  const titleWords = (achievement.Title || '').toLowerCase().split(/\s+/);
-  const descWords = (achievement.Description || '').toLowerCase().split(/\s+/);
+  const titleWords = (achievement.title || '').toLowerCase().split(/\s+/);
+  const descWords = (achievement.description || '').toLowerCase().split(/\s+/);
   const searchWords = [...new Set([...titleWords, ...descWords])].filter(w => w.length > 3);
 
   const scored = sections.map(s => {
@@ -119,9 +119,9 @@ function injectAchievements(md, achievements, sections) {
     const injectLine = best.line + 1;
 
     if (!injections[injectLine]) injections[injectLine] = [];
-    const medal = ach.Points >= 25 ? '🏅' : ach.Points >= 10 ? '🥈' : '🥉';
+    const medal = ach.points >= 25 ? '🏅' : ach.points >= 10 ? '🥈' : '🥉';
     injections[injectLine].push(
-      '> ' + medal + ' **' + ach.Title + '** — ' + ach.Description + ' _(RetroAchievements · ' + ach.Points + ' pts)_',
+      '> ' + medal + ' **' + ach.title + '** — ' + ach.description + ' _(RetroAchievements · ' + ach.points + ' pts)_',
     );
   }
 
@@ -132,7 +132,7 @@ function injectAchievements(md, achievements, sections) {
   }
 
   // Add summary at the top
-  const totalPts = achievements.reduce((s, a) => s + a.Points, 0);
+  const totalPts = achievements.reduce((s, a) => s + (a.points || 0), 0);
   const matched = Object.keys(injections).length;
   const summary = [
     '',
@@ -154,9 +154,9 @@ function injectAchievements(md, achievements, sections) {
 (async function () {
   const gameId = await resolveGameId(gameArg);
   console.log('Fetching achievements for game ID ' + gameId + '...');
-  const data = await getGameInfoAndUserProgress(auth, { gameId, username: USERNAME });
+  const data = await getGameInfoAndUserProgress(auth, { gameId, userName: USERNAME });
 
-  const achievements = (data.achievements || []).sort((a, b) => (a.DisplayOrder || 0) - (b.DisplayOrder || 0));
+  const achievements = Object.values(data.achievements || {}).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   console.log('Found ' + achievements.length + ' achievements');
 
   console.log('Parsing markdown sections...');
