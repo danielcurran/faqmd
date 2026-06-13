@@ -66,43 +66,145 @@ function parseSections(md) {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    // Match anchor IDs like: <a id="s6-4-8"></a>
     const anchorMatch = line.match(/<a id="(s\d+(?:-\d+)*)"><\/a>/);
     if (anchorMatch) {
-      if (current) sections.push(current);
-      current = { anchor: anchorMatch[1], title: '', line: i, keywords: [] };
+      if (current) {
+        current.body = current.bodyLines.join('\n').toLowerCase();
+        delete current.bodyLines;
+        sections.push(current);
+      }
+      current = { anchor: anchorMatch[1], title: '', line: i, keywords: [], bodyLines: [], body: '' };
       continue;
     }
-    // Match section heading after anchor
-    if (current && line.startsWith('#')) {
-      current.title = line.replace(/^#+\s+/, '').trim();
-      // Extract keywords from the title
-      current.keywords = current.title.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    if (current) {
+      if (!current.title && line.startsWith('#')) {
+        current.title = line.replace(/^#+\s+/, '').trim();
+        current.keywords = current.title.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+      } else if (current.title) {
+        // Collect body text until next anchor (max 200 lines per section)
+        if (current.bodyLines.length < 200 && line.trim() && !line.startsWith('#')) {
+          current.bodyLines.push(line.trim());
+        }
+      }
     }
   }
-  if (current) sections.push(current);
+  if (current) {
+    current.body = current.bodyLines.join('\n').toLowerCase();
+    delete current.bodyLines;
+    sections.push(current);
+  }
   return sections;
 }
 
+// Boss name → section anchor mapping for guaranteed matches
+const BOSS_MAP = {
+  'igglanova': ['s15-1-1', 's15-1-2'],
+  'juza': ['s15-2-1'],
+  'zio': ['s15-2-2', 's15-2-4'],
+  'gy-laguiah': ['s15-2-3', 's15-3-2'],
+  'chaossorcr': ['s15-2-5'],
+  'dark force i': ['s15-3-1'],
+  'dark force ii': ['s15-4-3'],
+  'dark force iii': ['s15-5-1'],
+  'd-elm-lars': ['s15-3-3'],
+  'carnivorous trees': ['s15-3-4'],
+  'xe-a-thouls': ['s15-4-1'],
+  'lashiec': ['s15-4-2'],
+  'de-vars': ['s15-5-2'],
+  'sa-lews': ['s15-5-3'],
+  'profound darkness': ['s15-5-4'],
+  'king rappy': ['s15-6-2'],
+  'fract ooze': ['s15-6-1'],
+  'dominators': ['s15-6-3'],
+  'alys': ['s15-6-4'],
+};
+
+// Section number → anchor mapping
+const SECTION_MAP = {
+  '6.1.1': 's6-1-1', '6.1.2': 's6-1-2', '6.1.3': 's6-1-3', '6.1.4': 's6-1-4',
+  '6.1.5': 's6-1-5', '6.1.6': 's6-1-6', '6.1.7': 's6-1-7', '6.1.8': 's6-1-8',
+  '6.1.9': 's6-1-9', '6.1.10': 's6-1-10', '6.1.11': 's6-1-11',
+  '6.2.1': 's6-2-1', '6.2.2': 's6-2-2', '6.2.3': 's6-2-3', '6.2.4': 's6-2-4',
+  '6.2.5': 's6-2-5', '6.2.6': 's6-2-6', '6.2.7': 's6-2-7', '6.2.8': 's6-2-8',
+  '6.2.9': 's6-2-9', '6.2.10': 's6-2-10', '6.2.11': 's6-2-11', '6.2.12': 's6-2-12',
+  '6.2.13': 's6-2-13',
+  '6.3.1': 's6-3-1', '6.3.2': 's6-3-2', '6.3.3': 's6-3-3', '6.3.4': 's6-3-4',
+  '6.3.5': 's6-3-5', '6.3.6': 's6-3-6', '6.3.7': 's6-3-7', '6.3.8': 's6-3-8',
+  '6.3.9': 's6-3-9', '6.3.10': 's6-3-10',
+  '6.4.1': 's6-4-1', '6.4.2': 's6-4-2', '6.4.3': 's6-4-3', '6.4.4': 's6-4-4',
+  '6.4.5': 's6-4-5', '6.4.6': 's6-4-6', '6.4.7': 's6-4-7', '6.4.8': 's6-4-8',
+  '6.4.9': 's6-4-9', '6.4.10': 's6-4-10',
+  '6.5.1': 's6-5-1', '6.5.2': 's6-5-2', '6.5.3': 's6-5-3', '6.5.4': 's6-5-4',
+  '6.5.5': 's6-5-5', '6.5.6': 's6-5-6', '6.5.7': 's6-5-7', '6.5.8': 's6-5-8',
+  '6.5.9': 's6-5-9', '6.5.10': 's6-5-10', '6.5.11': 's6-5-11',
+};
+
 // Step 2: Find relevant sections for a given achievement
 function findSections(achievement, sections) {
-  const titleWords = (achievement.title || '').toLowerCase().split(/\s+/);
-  const descWords = (achievement.description || '').toLowerCase().split(/\s+/);
-  const searchWords = [...new Set([...titleWords, ...descWords])].filter(w => w.length > 3);
+  const title = (achievement.title || '').toLowerCase();
+  const desc = (achievement.description || '').toLowerCase();
+  const fullText = title + ' ' + desc;
+
+  // 1. Check boss map for guaranteed matches
+  for (const [boss, anchors] of Object.entries(BOSS_MAP)) {
+    if (fullText.includes(boss)) {
+      const matched = anchors.map(a => sections.find(s => s.anchor === a)).filter(Boolean);
+      if (matched.length > 0) return matched.map(s => ({ ...s, score: 100 }));
+    }
+  }
+
+  // 2. Extract search terms: words, phrases, and special terms
+  const words = fullText.split(/[\s,\(\)\.\-–—]+/).filter(w => w.length > 2);
+  // Also extract 2-3 word phrases
+  const phrases = [];
+  const allWords = fullText.split(/\s+/).filter(w => w.length > 1);
+  for (let i = 0; i < allWords.length - 2; i++) {
+    phrases.push(allWords.slice(i, i + 2).join(' '));
+    phrases.push(allWords.slice(i, i + 3).join(' '));
+  }
 
   const scored = sections.map(s => {
     let score = 0;
-    const sectionText = (s.title + ' ' + s.keywords.join(' ')).toLowerCase();
-    for (const w of searchWords) {
-      if (sectionText.includes(w)) score += w.length;
-      // Bonus for boss/location keywords
-      if (/^(tower|castle|cave|valley|temple|dungeon|fort|ruins|town|village|fortress)$/i.test(w)) score += 5;
-      if (/^(defeat|defeated|boss|obtain|acquire|find|collect|reach)$/i.test(w)) score += 3;
+    const titleText = s.title.toLowerCase();
+    const allText = titleText + ' ' + (s.body || '');
+
+    // Title matches (weighted 3x)
+    for (const w of words) {
+      if (titleText.includes(w)) score += w.length * 3;
     }
+
+    // Body matches
+    for (const w of words) {
+      if (s.body && s.body.includes(w)) score += w.length;
+    }
+
+    // Phrase matches in title (weighted 5x - very strong signal)
+    for (const p of phrases) {
+      if (titleText.includes(p)) score += p.length * 5;
+      else if (s.body && s.body.includes(p)) score += p.length * 2;
+    }
+
+    // Location keyword bonus
+    if (/tower|castle|cave|valley|temple|dungeon|fort|ruins|town|village|fortress|academy|basement|mansion|shrine|lab/i.test(titleText)) {
+      for (const w of words) {
+        if (/^tower|castle|cave|valley|temple|dungeon|fort|ruins|town|village|fortress|academy|basement|mansion|shrine|lab$/i.test(w)) score += 10;
+      }
+    }
+
+    // Section number matching (if achievement mentions a section number)
+    const sectionNumMatch = fullText.match(/(\d+\.\d+(?:\.\d+)?)/);
+    if (sectionNumMatch && titleText.includes(sectionNumMatch[1])) score += 50;
+
     return { ...s, score };
   }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
 
-  return scored.slice(0, 2); // Top 2 matches
+  // Minimum score threshold to avoid false positives
+  if (scored.length === 0 || scored[0].score < 4) return [];
+
+  // If the top match has a very high score, only return it
+  if (scored[0].score > 30) return scored.slice(0, 1);
+
+  return scored.slice(0, 2);
 }
 
 // Step 3: Inject achievements into the markdown
