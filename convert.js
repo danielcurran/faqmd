@@ -177,17 +177,15 @@ function formatContent(text) {
       const line = proseBuf[i];
       const trimmed = line.trim();
 
-      // Detect line type
       let lineType = 'prose';
       if (/(?:leaves|joins)\s+the\s+party/i.test(trimmed)) {
         lineType = 'event';
       } else if (trimmed === '') {
-        lineType = currentType; // blank lines keep current type
+        lineType = currentType;
       } else if (/^(Recommended|Starting)\b/.test(trimmed) && i + 1 < proseBuf.length && proseBuf[i+1].includes('|')) {
         lineType = 'equipment';
       }
 
-      // If type changes and we have content, flush current block
       if (lineType !== 'prose' && currentType !== lineType && current.some(l => l !== '')) {
         subBlocks.push({ type: currentType, lines: current });
         current = [];
@@ -198,7 +196,6 @@ function formatContent(text) {
     }
     if (current.some(l => l !== '')) subBlocks.push({ type: currentType, lines: current });
 
-    // Process each sub-block
     for (const block of subBlocks) {
       const nonEmpty = block.lines.filter(l => l !== '');
 
@@ -211,24 +208,14 @@ function formatContent(text) {
         for (const l of nonEmpty) {
           if (/(?:leaves|joins)\s+the\s+party/i.test(l)) {
             out += '> **' + l + '**\n\n';
-          }
+          } else if (/^[¯_]{5,}$/.test(l)) continue;
+          else out += l + '\n\n';
         }
         continue;
       }
 
-      // Prose block: preserve line breaks
-      let paragraph = '';
-      for (let j = 0; j < block.lines.length; j++) {
-        const l = block.lines[j];
-        if (l === '') continue;
-        if (j > 0 && block.lines[j-1] !== '' && !/[.!?)\]'">]$/.test(paragraph.slice(-1)) && !paragraph.endsWith(':') && !paragraph.endsWith(',')) {
-          paragraph += ' ' + l;
-        } else {
-          if (paragraph) paragraph += '\n';
-          paragraph += l;
-        }
-      }
-      if (paragraph.trim()) out += paragraph.trim() + '\n\n';
+      // Prose — apply aggressive readability editing
+      out += editProse(block.lines);
     }
 
     proseBuf = [];
@@ -273,19 +260,176 @@ function formatContent(text) {
   return out;
 }
 
-function isEquipmentBlock(lines) {
-  if (lines.length < 3) return false;
-  const txt = lines.join('\n');
-  if (!txt.includes('|')) return false;
-  const hasEquipment = /Equipment|Starting|Recommended/.test(txt);
-  const hasPipes = (txt.match(/\|/g) || []).length >= 6;
-  return hasEquipment || hasPipes;
+// ===== Expert prose editor =====
+
+function editProse(lines) {
+  let out = '';
+
+  // Group lines into paragraphs (separated by blank lines)
+  const paragraphs = [];
+  let current = [];
+  for (const line of lines) {
+    if (line === '') {
+      if (current.length > 0) { paragraphs.push(current); current = []; }
+    } else {
+      current.push(line);
+    }
+  }
+  if (current.length > 0) paragraphs.push(current);
+
+  for (const para of paragraphs) {
+    const joined = para.join(' ').trim();
+    if (!joined) continue;
+
+    // Check if this is a definition list (term followed by a dash/double space definition)
+    if (isDefinitionPara(para)) {
+      out += formatDefinitions(para) + '\n\n';
+      continue;
+    }
+
+    // Check if this is a step-by-step walkthrough block
+    if (isStepList(para)) {
+      out += formatSteps(para) + '\n\n';
+      continue;
+    }
+
+    // Check if this is a plain list (items, concepts, etc.)
+    if (isBulletList(para)) {
+      out += formatBulletList(para) + '\n\n';
+      continue;
+    }
+
+    // Regular narrative: bold key terms, split into sensible paragraphs
+    out += formatNarrative(joined) + '\n\n';
+  }
+
+  return out;
 }
 
-function isPartyEvent(lines) {
-  if (lines.length > 5) return false;
-  const txt = lines.join(' ');
-  return /(?:leaves|joins)\s+the\s+party/i.test(txt);
+function isDefinitionPara(lines) {
+  let count = 0;
+  for (const l of lines) {
+    const t = l.trim();
+    if (/^[A-Z][\w\s\/\(\)'-]{2,40}\s{2,}/.test(t)) count++;
+    else if (/^[A-Z][\w\s\/\(\)'-]{2,40}\s[-–]\s/.test(t)) count++;
+  }
+  // Any definition lines = definition block
+  return count >= 1;
+}
+
+function formatDefinitions(lines) {
+  let out = '';
+  for (const l of lines) {
+    // Try "Term    definition" pattern first
+    let m = l.match(/^(.+?)\s{2,}(.+)$/);
+    if (m) {
+      let def = m[2].trim();
+      // Strip leading dash if present
+      if (/^[-–—]\s/.test(def)) def = def.replace(/^[-–—]\s*/, '');
+      out += '- **' + m[1].trim() + '** — ' + def + '\n';
+      continue;
+    }
+    // Try "Term - definition" pattern
+    m = l.match(/^(.+?)\s[-–]\s(.+)$/);
+    if (m) {
+      out += '- **' + m[1].trim() + '** — ' + m[2].trim() + '\n';
+      continue;
+    }
+    // Continuation line
+    out += l + '\n';
+  }
+  return out;
+}
+
+function isStepList(lines) {
+  // Walkthrough steps: each line starts with an action verb
+  const stepVerbs = /^(Go|Head|Walk|Take|Enter|Leave|Return|Ascend|Descend|Open|Use|Equip|Sell|Buy|Rest|Save|Talk|Speak|Examine|Continue|Follow|Turn|Make|Pick|Collect|Retrieve|Now|After|When|If|You|The|This|There|At|In|From|Before|Once|Navigate|Drive|Cross|Approach)\b/i;
+  let count = 0;
+  for (const l of lines) {
+    if (stepVerbs.test(l.trim())) count++;
+  }
+  return lines.length >= 3 && count >= lines.length * 0.5;
+}
+
+function formatSteps(lines) {
+  let out = '';
+  // Group into sub-paragraphs separated by blank-ish context clues
+  const chunks = [];
+  let chunk = [];
+  for (const l of lines) {
+    if (/^(Recommended|Starting|Equipment|You are now|A cut-scene|Back in|Meanwhile)/i.test(l.trim())) {
+      if (chunk.length > 0) chunks.push(chunk);
+      chunk = [l];
+    } else {
+      chunk.push(l);
+    }
+  }
+  if (chunk.length > 0) chunks.push(chunk);
+
+  for (const chk of chunks) {
+    const text = chk.join(' ').trim();
+    // Internal step list: lines with numbers or action verbs get bullets
+    const steps = text.split(/;\s(?=[A-Z])/); // split on semicolons followed by capitals
+    if (steps.length > 1) {
+      for (const s of steps) {
+        const t = s.trim();
+        if (t) out += '- ' + capitalize(t) + '\n';
+      }
+    } else if (chk.length === 1) {
+      out += chk[0].trim() + '\n\n';
+    } else {
+      out += text + '\n\n';
+    }
+  }
+  return out;
+}
+
+function isBulletList(lines) {
+  // Lines that look like items or brief descriptions
+  let count = 0;
+  for (const l of lines) {
+    const t = l.trim();
+    if (/^[A-Z][\w\s\/\(\)]+:/.test(t) && t.length < 60) count++;
+    else if (/^[•·\-*]/.test(t)) count++;
+    else if (/^[A-Z]/.test(t) && t.length < 50 && !/[\.\?\!]$/.test(t)) count++;
+  }
+  return lines.length >= 3 && count >= lines.length * 0.5;
+}
+
+function formatBulletList(lines) {
+  let out = '';
+  for (const l of lines) {
+    const t = l.trim();
+    if (/^[A-Z][\w\s\/\(\)]+:/.test(t)) {
+      out += '- ' + t + '\n';
+    } else {
+      out += '- ' + t + '\n';
+    }
+  }
+  return out;
+}
+
+function formatNarrative(text) {
+  // Bold key RPG terms
+  text = text.replace(/\b(HP|TP|EXP|ATK|DFS|MST|MTL\s*PWR|SP)\b/g, '**$1**');
+  text = text.replace(/\b(Fire|Water|Energy|Force|Gravity|Electric|Radiation|Light)\b(?=\s*(?:element|damage|Skill|Technique|attack))/gi, '**$1**');
+
+  // Split into sentences and group 2-3 sentences per paragraph
+  const sentences = text.match(/[^.!?]+[.!?]+"?\s*/g) || [text];
+  let out = '';
+  let chunk = '';
+  for (let i = 0; i < sentences.length; i++) {
+    chunk += sentences[i];
+    if ((i + 1) % 3 === 0 || i === sentences.length - 1) {
+      out += chunk.trim() + '\n\n';
+      chunk = '';
+    }
+  }
+  return out || text + '\n\n';
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function isArtLine(line) {
@@ -303,15 +447,6 @@ function isArtLine(line) {
   // Lines with no letters at all (pure decoration)
   if (letters === 0 && specials >= 3) return true;
   return false;
-}
-
-function isDefBlock(lines) {
-  if (lines.length < 2) return false;
-  let defs = 0;
-  for (const line of lines) {
-    if (/^[A-Z][\w\s\(\)\/-]{2,30}\s[-–]\s/.test(line)) defs++;
-  }
-  return defs >= lines.length * 0.6;
 }
 
 function escapeMd(text) {
