@@ -1,6 +1,6 @@
-# Walkthrough
+# Phantasy Star IV — Guide and Walkthrough
 
-> Converted from GameFAQs
+> By Seb Holt (Sir Pobalot) — Converted from GameFAQs
 
 ## Table of Contents
 
@@ -318,6 +318,12 @@ START - No function
    A,C   - Select option
    B     - Cancel choice
    D-Pad - Scroll options
+
+
+```
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+```
+
 3. Game Mechanics                                                     CGMCN
 
 <a id="s3"></a>
@@ -691,6 +697,11 @@ Opens a list consisting of the letters A to H. These represent the
 <a id="s4"></a>
 
 # 4. Terminology
+
+
+```
+¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+```
 
 The Phantasy Star IV game uses a lot of common RPG terminology, and if you
 are familiar with RPGs you should pick up the terms used quite quickly.
@@ -1189,6 +1200,12 @@ the game, have Alys defend every round and Chaz and Hahn hack away at
 Xanafalgues. Let Hahn use RES when anyone gets low on HP, and just keep
 going until you get fed up, at which point use VORTEX to finish off the
 Igglanova. How long you do this, if at all, is up to you.
+
+
+```
+ ¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+```
+
 Once the battle is over, Alys will ask Hahn why all the capsules are
 there, and he will state that he doesn't know. They decide to see the
 principal, so return up the stairs and make your way out of the basement.
@@ -1224,12 +1241,6 @@ your trip through the basement. Pick up some MONOMATEs from the Tool Shop
 if you wish, then leave Piata. You are now outside.
 
 Enemies around Piata and Mile: Crawler, Mini Worm, MonsterFly
-
-
-```
-¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-```
-
 There is nothing to the west, so head east a little, then continue north
 until you reach a small village to the south of some quicksand. You may
 also notice that there is a castle on the other side of the quicksand.
@@ -1919,7 +1930,7 @@ directly. Our first stop will be Aiedo.
 Starting Party: Gryz , Alys , Chaz , Rika , Hahn
 Starting Level: 10   , 10-11, 10-11, 1    , 10
 Enemies between Zema and Aiedo: Crawler, InfantWorm, Locusta, Mini Worm,
-¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯  MonsterFly, Scorpirus
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯  MonsterFly, Scorpirus
 
 Head a little west, then north across the bridge. There is a village called
 Nalya to the north, and you can visit it if you wish.
@@ -1991,7 +2002,7 @@ _______/|_______________|______________________/
         |               |TITN-MAIL    1120 MST|  +15 DFS                  /
         |               |TITNSHIELD    600 MST|   +7 DFS                  \
         |_______________|_____________________|___________________________/
-        |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\
+        |¯¯¯¯¯¯¯¯¯¯��¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\
         |Hunter's Guild |CRMC-KNIFE   1600 MST|  +14 ATK                  /
         |Weapon Store   |CRMC-SWORD   3600 MST|  +43 ATK   +7 DFS         \
         |               |SABER-CLAW   1700 MST|  +18 ATK                  /
@@ -2352,6 +2363,12 @@ party are back in Krup.
 
 Starting Party: Gryz , Alys , Chaz , Rika , Hahn
 Starting Level: 15-16, 14-15, 15-16, 14-15, 14-15
+
+
+```
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+```
+
 The party meet Saya in Krup, and take Alys to a bed at the Inn. Her
 condition has not improved. Chaz notes that Zio was unlike anything he has
 ever fought, and Rika diagnoses that Alys seems to be possessed by an evil
@@ -2750,7 +2767,7 @@ The party are not going to let the monster take the wand, so battle begins.
 
 ```
 | Gy-Laguiah            ||                    |
-|¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|| Recommended Level: | 
+|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|| Recommended Level: | 
 |  HP: 2580             ||                    |
 | EXP: 10000  MST: 1224 || Demi: 14-15       /
 |                       || Gryz: 17-18      /
@@ -5937,7 +5954,7 @@ Starting Level: 46+  , 49+  , 52+  , 45+  . 45+
 
 ```
 Recommended       |   Wren   | * Chaz * |   Rika   |   Rune   |  Fifth   |
-Equipment   |¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯��¯¯¯¯¯¯¯¯|
+Equipment   |¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|
             |Head |PALMA-RING|ALGO-RING |MOTA-RING |DEZO-RING |          |
             |Right|PULSEVULCN|ELSYDEON  |SILVR-TUSK|SILVSHIELD| See List |
             |Left | /2-HAND  | /2-HAND  |GUARD-CLAW|SILVSHIELD|  Above   |
@@ -14943,7 +14960,7 @@ _____________________________________ |__________||___________||__________|
    |¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|(| ________
    | Death |Destroy|Cleanse|  EMP  | |/ Skills \
    |   x   |   /   |   x   |   /   |(|          ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯| |
+   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯| |
    | Paralysis, Sleep & Seals?  No |(|
    |_______________________________| |_____________________________________
    |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -15369,7 +15386,7 @@ _____________________________________ |__________||/¯¯¯¯¯¯¯¯¯¯¯¯¯¯
    |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯| | WARNING,DETONATION (Combo)
    | Paralysis, Sleep & Seals?  No |(|
    |_______________________________| |_____________________________________
-   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ```
 
 | NOTES: Has no standard attack
@@ -15703,7 +15720,7 @@ _____________________________________ |__________||/¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 _____________________________________ |__________||___________||__________|
 ¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|   __________
    | Evil Being / Knight           |  / Location \
-   |                               | |            ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   |                               | |            ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯
    | Encounter: On foot            |(| Outside on Rykros, Strength Tower,
    |                               | | Courage Tower and Anger Tower
    | Number Encountered:       1-2 |(| ____________
@@ -16457,7 +16474,7 @@ _____________________________________ |__________||/¯¯¯¯¯¯¯¯¯¯¯¯¯¯
    |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯| | FISSION
    | Paralysis, Sleep & Seals? Yes |(|
    |_______________________________| |_____________________________________
-   |¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ```
 
 | NOTES: Uses FISSION unless there are two Gicefalgues on-screen
@@ -16662,7 +16679,7 @@ _____________________________________ |__________||___________||__________|
    |                               | |
    | Number Encountered:         1 |(| ____________
    |_______________________________| |/ Techniques \
-   |Fir|Wtr|Nrg|Frc|Grv|Elc|Rad|Lgt|(|              ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   |Fir|Wtr|Nrg|Frc|Grv|Elc|Rad|Lgt|(|              ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯
    |   |   |   |   |XXX|XXX|XXX|XXX| |
    |¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|¯¯¯¯¯¯¯|(| ________
    | Death |Destroy|Cleanse|  EMP  | |/ Skills \
@@ -17986,7 +18003,7 @@ _____________________________________ |__________||/¯¯¯¯¯¯¯¯¯¯¯¯¯¯
    |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯| | TWIN CLAW
    | Paralysis, Sleep & Seals?  No |(|
    |_______________________________| |_____________________________________
-   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯��¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ```
 
 | NOTES: Attacks with a set of sharp claws

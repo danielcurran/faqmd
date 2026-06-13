@@ -13,7 +13,7 @@ cd faqdown
 node convert.js "https://gamefaqs.gamespot.com/genesis/563334-phantasy-star-iv/faqs/31907?print=1"
 ```
 
-Output is saved as `walkthrough.md`.
+Output is saved as `phantasy-star-iv-guide-and-walkthrough.md`.
 
 ### opencode skill
 
@@ -45,66 +45,6 @@ node convert.js "https://gamefaqs.gamespot.com/snes/588771-chrono-trigger/faqs/2
   calls for it
 - Original line breaks preserved in prose paragraphs
 
-## Cross-reference with RetroAchievements
-
-The `achievements` branch adds achievement cross-referencing from
-[retroachievements.org](https://retroachievements.org).
-
-### Setup
-
-1. [Get your API key](https://retroachievements.org/controlpanel.php) from RetroAchievements
-2. Copy the env template and fill in your credentials:
-
-```bash
-cp .env.example .env
-# Edit .env: RA_USER=your_username, RA_KEY=your_web_api_key
-export $(cat .env | xargs)
-npm install
-```
-
-### Convert and cross-reference
-
-```bash
-# Step 1: Convert a walkthrough
-node convert.js "https://gamefaqs.gamespot.com/genesis/563334-phantasy-star-iv/faqs/31907?print=1"
-# Output: walkthrough.md
-
-# Step 2: Cross-reference with RetroAchievements
-node crossref-achievements.js walkthrough.md 5633
-# Output: walkthrough-achievements.md
-```
-
-You can also search for a game by name instead of using an ID:
-
-```bash
-node crossref-achievements.js walkthrough.md "Phantasy Star IV"
-```
-
-### How matching works
-
-Each achievement from RetroAchievements has a **Title** and **Description**.
-The script:
-
-1. **Parses** the walkthrough's 208 section anchors and titles
-2. **Scores** each section against the achievement using keyword overlap
-3. **Bonus points** for location keywords (`tower`, `castle`, `cave`, `boss`) and action keywords (`defeat`, `obtain`, `collect`)
-4. **Injects** callout blocks at the top matching sections:
-
-```markdown
-### 6.4.8. A Living Tower
-
-> 🏅 **A Living Tower** — Defeat Dark Force in Garuberk Tower
-> _(RetroAchievements · 25 pts)_
-```
-
-### Medal tiers
-
-| Points | Medal |
-|---|---|
-| 25+ | 🏅 |
-| 10-24 | 🥈 |
-| 1-9 | 🥉 |
-
 ## How it works
 
 GameFAQs print pages (`?print=1`) are highly consistent:
@@ -133,6 +73,4 @@ open in a browser, or push to GitHub Pages.
 | File | Purpose |
 |---|---|
 | `convert.js` | Node.js scraper/converter script |
-| `crossref-achievements.js` | RetroAchievements cross-referencing |
 | `SKILL.md` | opencode agent skill definition |
-| `.env.example` | API key template for cross-referencing |
