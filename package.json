@@ -1,0 +1,12 @@
+{
+  "name": "faqdown",
+  "version": "1.0.0",
+  "description": "Convert GameFAQs walkthroughs to markdown and cross-reference with RetroAchievements",
+  "scripts": {
+    "convert": "node convert.js",
+    "crossref": "node crossref-achievements.js"
+  },
+  "dependencies": {
+    "@retroachievements/api": "^1.0.0"
+  }
+}

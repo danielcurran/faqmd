@@ -1,1 +1,4 @@
 raw.txt
+node_modules/
+.env
+*achievements.md
