@@ -160,9 +160,118 @@ function generateMD(sections) {
 }
 
 function formatContent(text) {
-  const trimmed = text.replace(/\n{3,}/g, '\n\n').trim();
-  if (!trimmed) return '';
-  return '\n```\n' + trimmed + '\n```\n\n';
+  const lines = text.split('\n');
+  let out = '';
+  let artBuf = [];
+  let proseBuf = [];
+
+  function flushArt() {
+    if (artBuf.length === 0) return;
+    out += '\n```\n' + artBuf.join('\n').trimEnd() + '\n```\n\n';
+    artBuf = [];
+  }
+
+  function flushProse() {
+    if (proseBuf.length === 0) { proseBuf = []; return; }
+
+    // Split into paragraphs at blank lines
+    const paragraphs = [];
+    let current = [];
+    for (const l of proseBuf) {
+      if (l.trim() === '') {
+        if (current.length > 0) { paragraphs.push(current); current = []; }
+      } else {
+        current.push(l);
+      }
+    }
+    if (current.length > 0) paragraphs.push(current);
+
+    for (const para of paragraphs) {
+      if (para.length === 0) continue;
+
+      // Party event → bold callout
+      if (isBlockEvent(para)) {
+        for (const l of para) {
+          if (/(?:leaves|joins)\s+the\s+party/i.test(l.trim())) {
+            out += '> **' + l.trim() + '**\n\n';
+          } else if (!/^[¯_]{5,}$/.test(l.trim())) {
+            out += l.trim() + '\n\n';
+          }
+        }
+        continue;
+      }
+
+      // List-like → bullet points
+      if (isBlockList(para)) {
+        for (const l of para) out += '- ' + l.trim() + '\n';
+        out += '\n';
+        continue;
+      }
+
+      // Plain prose
+      out += para.join('\n').trim() + '\n\n';
+    }
+
+    proseBuf = [];
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const t = line.trim();
+
+    // Skip leaked section headers
+    if (/^\d+\.\d+(?:\.\d+)*\.?\s+[A-Z][\w\s'\-–]{3,60}\s{3,}C[A-Z]{4}\s*$/.test(t)) {
+      flushProse(); flushArt(); continue;
+    }
+    if (/^C[A-Z]{4}\s*$/.test(t)) continue;
+
+    if (t === '') {
+      if (artBuf.length > 0 && artBuf[artBuf.length-1] !== '') artBuf.push('');
+      if (proseBuf.length > 0 && proseBuf[proseBuf.length-1] !== '') proseBuf.push('');
+      continue;
+    }
+
+    // Classify line
+    if (isArtLine(t)) {
+      flushProse();
+      artBuf.push(line);
+    } else {
+      flushArt();
+      proseBuf.push(line);
+    }
+  }
+
+  flushProse();
+  flushArt();
+  return out;
+}
+
+function isArtLine(line) {
+  if (!line) return false;
+  if ((line.match(/\|/g) || []).length >= 2) return true;
+  if (/[\\\/]{2,}/.test(line) && line.length > 5) return true;
+  if (/^[_\*¯\-=#]{10,}$/.test(line)) return true;
+  const specials = (line.match(/[^\w\s]/g) || []).length;
+  const letters = (line.match(/[a-zA-Z]/g) || []).length;
+  if (specials > letters * 2 && specials >= 5) return true;
+  if (letters === 0 && specials >= 3) return true;
+  return false;
+}
+
+function isBlockEvent(lines) {
+  const txt = lines.join(' ');
+  return lines.length <= 4 && /(?:leaves|joins)\s+the\s+party/i.test(txt);
+}
+
+function isBlockList(lines) {
+  if (lines.length < 3) return false;
+  let listy = 0;
+  for (const l of lines) {
+    const t = l.trim();
+    if (/^[A-Z][\w\s\/\(\)'-]{2,30}\s{2,}/.test(t)) { listy++; continue; }
+    if (/^(Go|Head|Walk|Take|Enter|Leave|Return|Ascend|Descend|Open|Use|Equip|Sell|Buy|Rest|Save|Talk|Speak|Examine|Continue|Follow|Turn|Make|Pick|Collect|Retrieve)\b/i.test(t) && t.length < 60) { listy++; continue; }
+  }
+  return listy >= lines.length * 0.5;
 }
 
 function escapeMd(text) {
