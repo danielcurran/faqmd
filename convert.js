@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
 
-const URL = 'https://gamefaqs.gamespot.com/genesis/563334-phantasy-star-iv/faqs/31907?print=1';
-const OUTPUT = '/Users/daniel/Desktop/walkthroughs/phantasy-star-iv.md';
+const URL = process.argv[2] || 'https://gamefaqs.gamespot.com/genesis/563334-phantasy-star-iv/faqs/31907?print=1';
+
+// Extract output filename from URL
+function outputName(url) {
+  const m = url.match(/faqs\/(\d+)/);
+  if (m) return 'guide-' + m[1] + '.md';
+  return 'walkthrough.md';
+}
+
+const OUTPUT = path.join(__dirname, outputName(URL));
 
 // Step 1: Fetch the page
 function fetch(url) {
