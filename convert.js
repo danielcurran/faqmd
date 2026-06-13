@@ -166,22 +166,79 @@ function formatContent(text) {
   let artBuf = [];
 
   function flushProse() {
-    if (proseBuf.length > 0) {
-      const text = proseBuf.filter(l => l !== '').join(' ');
-      proseBuf = [];
-      if (!text.trim()) return;
-      out += text.trim() + '\n\n';
+    if (proseBuf.length === 0) { proseBuf = []; return; }
+
+    // Split prose buffer into sub-blocks at transition points
+    const subBlocks = [];
+    let current = [];
+    let currentType = 'prose';
+
+    for (let i = 0; i < proseBuf.length; i++) {
+      const line = proseBuf[i];
+      const trimmed = line.trim();
+
+      // Detect line type
+      let lineType = 'prose';
+      if (/(?:leaves|joins)\s+the\s+party/i.test(trimmed)) {
+        lineType = 'event';
+      } else if (trimmed === '') {
+        lineType = currentType; // blank lines keep current type
+      } else if (/^(Recommended|Starting)\b/.test(trimmed) && i + 1 < proseBuf.length && proseBuf[i+1].includes('|')) {
+        lineType = 'equipment';
+      }
+
+      // If type changes and we have content, flush current block
+      if (lineType !== 'prose' && currentType !== lineType && current.some(l => l !== '')) {
+        subBlocks.push({ type: currentType, lines: current });
+        current = [];
+      }
+      if (lineType !== 'prose') currentType = lineType;
+
+      current.push(trimmed);
     }
+    if (current.some(l => l !== '')) subBlocks.push({ type: currentType, lines: current });
+
+    // Process each sub-block
+    for (const block of subBlocks) {
+      const nonEmpty = block.lines.filter(l => l !== '');
+
+      if (block.type === 'equipment') {
+        out += '\n```\n' + nonEmpty.join('\n') + '\n```\n\n';
+        continue;
+      }
+
+      if (block.type === 'event') {
+        for (const l of nonEmpty) {
+          if (/(?:leaves|joins)\s+the\s+party/i.test(l)) {
+            out += '> **' + l + '**\n\n';
+          }
+        }
+        continue;
+      }
+
+      // Prose block: preserve line breaks
+      let paragraph = '';
+      for (let j = 0; j < block.lines.length; j++) {
+        const l = block.lines[j];
+        if (l === '') continue;
+        if (j > 0 && block.lines[j-1] !== '' && !/[.!?)\]'">]$/.test(paragraph.slice(-1)) && !paragraph.endsWith(':') && !paragraph.endsWith(',')) {
+          paragraph += ' ' + l;
+        } else {
+          if (paragraph) paragraph += '\n';
+          paragraph += l;
+        }
+      }
+      if (paragraph.trim()) out += paragraph.trim() + '\n\n';
+    }
+
     proseBuf = [];
   }
 
   function flushArt() {
-    // Remove trailing blank lines
     while (artBuf.length > 0 && artBuf[artBuf.length - 1] === '') artBuf.pop();
     if (artBuf.length >= 2) {
       out += '\n```\n' + artBuf.join('\n') + '\n```\n\n';
     } else if (artBuf.length === 1) {
-      // Single art line - probably just a separator, treat as prose
       out += '---\n\n';
     }
     artBuf = [];
@@ -191,16 +248,12 @@ function formatContent(text) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    // Skip section header lines
     if (/^\d+\.\d+(?:\.\d+)*\.?\s+[A-Z][\w\s'\-–]{3,60}\s{3,}C[A-Z]{4}\s*$/.test(trimmed)) {
-      flushProse();
-      flushArt();
-      continue;
+      flushProse(); flushArt(); continue;
     }
     if (/^C[A-Z]{4}\s*$/.test(trimmed)) continue;
 
     if (!trimmed) {
-      // Blank line: add to current buffer if it has content
       if (proseBuf.length > 0 && proseBuf[proseBuf.length - 1] !== '') proseBuf.push('');
       if (artBuf.length > 0 && artBuf[artBuf.length - 1] !== '') artBuf.push('');
       continue;
@@ -220,8 +273,25 @@ function formatContent(text) {
   return out;
 }
 
+function isEquipmentBlock(lines) {
+  if (lines.length < 3) return false;
+  const txt = lines.join('\n');
+  if (!txt.includes('|')) return false;
+  const hasEquipment = /Equipment|Starting|Recommended/.test(txt);
+  const hasPipes = (txt.match(/\|/g) || []).length >= 6;
+  return hasEquipment || hasPipes;
+}
+
+function isPartyEvent(lines) {
+  if (lines.length > 5) return false;
+  const txt = lines.join(' ');
+  return /(?:leaves|joins)\s+the\s+party/i.test(txt);
+}
+
 function isArtLine(line) {
   if (!line) return false;
+  // Box drawing with lots of pipe chars
+  if ((line.match(/\|/g) || []).length >= 3) return true;
   // Box drawing with pipes and bars
   if (/[|‖\/\\]{2,}/.test(line) && !/\w{3,}\s\w{3,}/.test(line)) return true;
   // Lines of repeated decorative characters
