@@ -119,8 +119,11 @@ function findHeaderEnd(body, fromPos) {
 function cleanSection(text) {
   // Remove separator lines (long lines of ___ or *** or ¯¯)
   text = text.replace(/^[_\*¯\s]{30,}$/gm, '');
-  // Remove next section headers that leaked in (e.g. "15.6. Side Missions CBSSM")
-  text = text.replace(/\n\d+\.\d+(?:\.\d+)*\.?\s+.+?\s+C[A-Z]{4}\s*$/gm, '');
+  // Remove next section headers that leaked in
+  text = text.replace(/\n\d+\.\d+(?:\.\d+)*\.?\s+.+?C[A-Z]{4}\s*$/gm, '');
+  text = text.replace(/\n\d+\.\d+(?:\.\d+)*\.?\s+[A-Z][\w\s'-]{2,50}\s{2,}C[A-Z]{4}\s*$/gm, '');
+  // Remove "6.1.1. Title    CTWLR" style headers from content
+  text = text.replace(/\n\d+\.\d+(?:\.\d+)*\.?\s+[A-Z][\w\s'-]{3,50}\s{3,}C[A-Z]{4}\s*$/gm, '');
   // Collapse multiple blank lines
   text = text.replace(/\n{3,}/g, '\n\n');
   return text.trim();
@@ -150,27 +153,95 @@ function generateMD(sections) {
   for (const s of sections) {
     md += '<a id="' + anchorId(s) + '"></a>\n\n';
     md += '#'.repeat(s.level) + ' ' + s.num + '. ' + s.title + '\n\n';
-    // Format content: join lines that aren't blank
-    const paragraphs = s.content.split('\n\n');
-    for (const p of paragraphs) {
-      const trimmed = p.trim();
-      if (!trimmed) continue;
-
-      // Remove extra spaces from fixed-width formatting
-      let formatted = trimmed.replace(/\s{2,}/g, ' ');
-
-      // Detect ASCII art (lines with lots of special chars)
-      if (trimmed.match(/[_¯\*\#%=\/\\-]{4,}/) ||
-          trimmed.match(/^[\.\s\|\(\)\/\\=\*#@%\+\-;\.,]+$/)) {
-        // ASCII art - put in code block
-        md += '\n```\n' + trimmed + '\n```\n\n';
-      } else {
-        md += formatted + '\n\n';
-      }
-    }
+    md += formatContent(s.content);
   }
 
   return md;
+}
+
+function formatContent(text) {
+  const lines = text.split('\n');
+  let out = '';
+  let proseBuf = [];
+  let artBuf = [];
+
+  function flushProse() {
+    if (proseBuf.length > 0) {
+      const text = proseBuf.filter(l => l !== '').join(' ');
+      proseBuf = [];
+      if (!text.trim()) return;
+      out += text.trim() + '\n\n';
+    }
+    proseBuf = [];
+  }
+
+  function flushArt() {
+    // Remove trailing blank lines
+    while (artBuf.length > 0 && artBuf[artBuf.length - 1] === '') artBuf.pop();
+    if (artBuf.length >= 2) {
+      out += '\n```\n' + artBuf.join('\n') + '\n```\n\n';
+    } else if (artBuf.length === 1) {
+      // Single art line - probably just a separator, treat as prose
+      out += '---\n\n';
+    }
+    artBuf = [];
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Skip section header lines
+    if (/^\d+\.\d+(?:\.\d+)*\.?\s+[A-Z][\w\s'\-–]{3,60}\s{3,}C[A-Z]{4}\s*$/.test(trimmed)) {
+      flushProse();
+      flushArt();
+      continue;
+    }
+    if (/^C[A-Z]{4}\s*$/.test(trimmed)) continue;
+
+    if (!trimmed) {
+      // Blank line: add to current buffer if it has content
+      if (proseBuf.length > 0 && proseBuf[proseBuf.length - 1] !== '') proseBuf.push('');
+      if (artBuf.length > 0 && artBuf[artBuf.length - 1] !== '') artBuf.push('');
+      continue;
+    }
+
+    if (isArtLine(trimmed)) {
+      flushProse();
+      artBuf.push(trimmed);
+    } else {
+      flushArt();
+      proseBuf.push(trimmed);
+    }
+  }
+
+  flushProse();
+  flushArt();
+  return out;
+}
+
+function isArtLine(line) {
+  if (!line) return false;
+  // Box drawing with pipes and bars
+  if (/[|‖\/\\]{2,}/.test(line) && !/\w{3,}\s\w{3,}/.test(line)) return true;
+  // Lines of repeated decorative characters
+  if (/^[_\*¯\-=#]{10,}$/.test(line)) return true;
+  // Mostly special characters (but not prose with a few specials)
+  const specials = (line.match(/[^\w\s]/g) || []).length;
+  const letters = (line.match(/[a-zA-Z]/g) || []).length;
+  if (specials > letters && specials >= 5) return true;
+  // Lines with no letters at all (pure decoration)
+  if (letters === 0 && specials >= 3) return true;
+  return false;
+}
+
+function isDefBlock(lines) {
+  if (lines.length < 2) return false;
+  let defs = 0;
+  for (const line of lines) {
+    if (/^[A-Z][\w\s\(\)\/-]{2,30}\s[-–]\s/.test(line)) defs++;
+  }
+  return defs >= lines.length * 0.6;
 }
 
 function escapeMd(text) {
