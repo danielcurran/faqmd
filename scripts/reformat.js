@@ -3,7 +3,7 @@
 // --- Detection helpers ---
 
 function isDecorativeLine(line) {
-  return /^[\*\-_=¯]{30,}$/.test(line.trim());
+  return /^[\*\-_=¯]{8,}$/.test(line.trim());
 }
 
 function isAsciiArtBlock(lines) {
@@ -100,6 +100,11 @@ function formatMixed(lines) {
         if (isAsciiArtBlock(group.lines)) {
           return formatAscii(group.lines);
         }
+      } else {
+        // Single isolated pipe line — keep decorative frames, drop stray pipes
+        const line = group.lines[0].trim();
+        const notWord = line.replace(/[a-zA-Z0-9\s]/g, '');
+        if (notWord.length > line.length / 2) return formatAscii(group.lines);
       }
       return formatProse(group.lines);
     }
