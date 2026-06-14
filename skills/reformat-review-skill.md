@@ -102,6 +102,25 @@ For each markdown pipe table, verify structural consistency:
 3. If the original code block is nearby (identified in Scan 1), use it
    to rebuild the table correctly. If unavailable, flag it for manual fix.
 
+### Scan 5: Bullet lists in prose
+
+Walkthrough sections often contain discrete step-by-step instructions
+that read better as bullet lists than as dense paragraphs.
+
+Find sequences of 3+ consecutive sentences where each starts with a
+walkthrough action verb (Go, Head, Walk, Take, Enter, Leave, Use,
+Follow, Continue, Turn, Collect, Pick up, Open, Search, Return, etc.).
+
+For each sequence:
+- Format as a markdown unordered list (`- sentence`) or numbered list
+  (`1. sentence`) if the original text uses sequential numbering.
+- Keep descriptive paragraphs (non-action sentences) as-is — do NOT
+  force them into lists.
+- Leave at least one blank line between the list and surrounding
+  paragraphs.
+- A sequence must have at least 3 action-verb sentences to qualify.
+  Fewer than 3 is not a list — it's just instruction prose.
+
 ### After all scans
 
 Print a summary report:
@@ -112,6 +131,7 @@ reformat-review complete
   Scan 2 (tables → code blocks):  N fixed
   Scan 3 (stat blocks in prose):  N fixed
   Scan 4 (broken tables):         N fixed (M flagged for manual)
+  Scan 5 (bullet lists):          N sequences formatted
   ────────────────────────────
   Total: N issues handled
 ```

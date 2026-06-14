@@ -144,6 +144,10 @@ function hasConsistentPipes(lines) {
 function formatProse(lines) {
   let text = lines.join(' ').replace(/ +/g, ' ').trim();
   if (!text) return '';
+  // Split at sentence boundaries where next sentence starts with a walkthrough action verb
+  const actionVerbs = 'Go|Head|Walk|Take|Enter|Leave|Return|Use|Talk|Speak|Follow|Continue|Proceed|Travel|Make your|Turn|Collect|Pick up|Open|Search|Examine|Check|Equip|Buy|Sell|Wait|Defeat|Fight|Navigate|Look for|Find';
+  const pattern = new RegExp('\\.\\s+(?=(' + actionVerbs + ')\\b)', 'g');
+  text = text.replace(pattern, '.\n\n');
   return text + '\n\n';
 }
 
