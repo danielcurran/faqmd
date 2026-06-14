@@ -23,7 +23,7 @@ function extractText(html) {
   let text = '';
   let m;
   while ((m = re.exec(html)) !== null) text += m[1] + '\n';
-  return text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+  return text.replace(/\r/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 }
 
 function parseTOC(text) {

@@ -81,13 +81,15 @@ function formatDecorativeText(lines) {
     s = s.replace(/^\/\/\s*/, '')
          .replace(/^\|?\s*\/\s*/, '')
          .replace(/^[\/\\]+\s*/, '')
-         .replace(/[\/\\¯_|=\-]{2,}/g, ' ')
-         .replace(/\s+/g, ' ').trim();
-    if (s && s !== orig) {
-      cleaned.push('**' + s + '**');
-      anyChanged = true;
-    } else if (s) {
-      cleaned.push(s);
+         .replace(/[\/\\¯_|=\-]{2,}/g, ' ');
+    if (s !== orig) {
+      s = s.replace(/\s+/g, ' ').trim();
+      if (s) {
+        cleaned.push('**' + s + '**');
+        anyChanged = true;
+      }
+    } else if (orig) {
+      cleaned.push(orig);
     }
   }
   if (!anyChanged) return null;
