@@ -287,12 +287,15 @@ a:hover { text-decoration: underline; color: #f5e88a; }
     max-width: none; margin-left: 0; margin-right: 0;
   }
   #content pre, #content table {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+    padding: 10px 12px;
     max-width: 100%;
+    white-space: pre-wrap;
+    word-break: normal;
+    overflow-wrap: anywhere;
+    tab-size: 2;
   }
-  #content pre code { font-size: 0.75rem; }
+  #content pre code { font-size: 0.7rem; white-space: pre-wrap; word-break: normal; }
   #nav-top, #nav-bottom { padding: 8px 12px; }
   .nav-btn { padding: 6px 14px; font-size: 0.85rem; }
 }
