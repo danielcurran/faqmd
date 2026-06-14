@@ -296,6 +296,12 @@ a:hover { text-decoration: underline; color: #f5e88a; }
     tab-size: 2;
   }
   #content pre code { font-size: 0.7rem; white-space: pre-wrap; word-break: normal; }
+  #content pre.keep-scroll {
+    white-space: pre;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #content pre.keep-scroll code { white-space: pre; }
   #nav-top, #nav-bottom { padding: 8px 12px; }
   .nav-btn { padding: 6px 14px; font-size: 0.85rem; }
 }
@@ -382,6 +388,7 @@ async function loadSection(idx) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     let md = await res.text();
     $('content').innerHTML = await marked.parse(md);
+    detectArtBlocks();
     updateNav();
     highlightToc(s.num);
     $('content').scrollTop = 0;
@@ -394,6 +401,33 @@ async function loadSection(idx) {
 function loadByNum(num) {
   const s = flatSections.find(s => s.num === num);
   if (s && s.file) loadSection(flatSections.indexOf(s));
+}
+
+function isAsciiArtBlock(el) {
+  const text = el.textContent;
+  const lines = text.split('\n');
+  let artLines = 0;
+  for (const line of lines) {
+    const s = line.trim();
+    if (!s) continue;
+    // 3+ pipe chars (table)
+    if ((s.match(/\|/g) || []).length >= 3) { artLines++; continue; }
+    // Repeated decorative chars
+    if (/^[\*\-_=¯]{8,}$/.test(s)) { artLines++; continue; }
+    // Box-drawing patterns
+    if ((s.match(/[\/\\\|\-]/g) || []).length >= 5) { artLines++; continue; }
+    // Lines where special chars heavily outnumber letters
+    const letters = (s.match(/[a-zA-Z]/g) || []).length;
+    const special = (s.match(/[^a-zA-Z0-9\s]/g) || []).length;
+    if (special > letters * 2 && special > 3) artLines++;
+  }
+  return artLines >= 2;
+}
+
+function detectArtBlocks() {
+  document.querySelectorAll('#content pre').forEach(el => {
+    if (isAsciiArtBlock(el)) el.classList.add('keep-scroll');
+  });
 }
 
 function goPrev() { if (currentIdx > 0) loadSection(currentIdx - 1); }
