@@ -93,6 +93,6 @@ Append unmatched achievements at the end of the walkthrough under a
 After injecting achievements, run the splitter and push:
 
 ```bash
-node split-guide.js walkthrough.md guide/
+node scripts/split-guide.js walkthrough.md guide/
 git add -f guide/ && git commit -m "feat: add RetroAchievements annotations" && git push
 ```

@@ -24,14 +24,14 @@ keys or accounts needed.
 ```bash
 git clone https://github.com/danielcurran/faqmd
 cd faqmd
-node convert.js "https://gamefaqs.gamespot.com/genesis/563334-phantasy-star-iv/faqs/31907?print=1"
+node scripts/convert.js "https://gamefaqs.gamespot.com/genesis/563334-phantasy-star-iv/faqs/31907?print=1"
 ```
 
 Output is saved as `walkthrough.md`. For large guides, split into mobile-friendly
 sections:
 
 ```bash
-node split-guide.js walkthrough.md guide/
+node scripts/split-guide.js walkthrough.md guide/
 ```
 
 This creates a `guide/` directory with `index.md` + one file per section.
@@ -40,7 +40,7 @@ This creates a `guide/` directory with `index.md` + one file per section.
 
 ```bash
 mkdir -p ~/.config/opencode/skills/faqmd
-cp SKILL.md ~/.config/opencode/skills/faqmd/SKILL.md
+cp skills/SKILL.md ~/.config/opencode/skills/faqmd/SKILL.md
 # Restart opencode, then ask:
 # "convert this gamefaqs walkthrough https://gamefaqs.gamespot.com/..."
 ```
@@ -61,7 +61,7 @@ accurately match achievements to walkthrough sections.
 
 ```bash
 mkdir -p ~/.config/opencode/skills/retroachievements
-cp retroachievements-skill.md ~/.config/opencode/skills/retroachievements/SKILL.md
+cp skills/retroachievements-skill.md ~/.config/opencode/skills/retroachievements/SKILL.md
 ```
 
 ### Set up credentials
@@ -92,7 +92,7 @@ node convert.js "https://gamefaqs.gamespot.com/.../faqs/12345?print=1"
 # "Match RetroAchievements for game 50 to walkthrough.md"
 
 # 3. Split
-node split-guide.js walkthrough.md guide/
+node scripts/split-guide.js walkthrough.md guide/
 
 # 4. Deploy (faqmd.dev — guide/ is served by GitHub Pages)
 # git add -f guide/ && git commit -m "add walkthrough" && git push
@@ -131,7 +131,7 @@ The converter:
 
 | File | Purpose |
 |---|---|
-| `convert.js` | Core converter script |
-| `split-guide.js` | Split large output into mobile-friendly section files |
-| `SKILL.md` | opencode agent skill — convert walkthroughs |
-| `retroachievements-skill.md` | opencode agent skill — AI-powered achievement matching |
+| `scripts/convert.js` | Core converter script |
+| `scripts/split-guide.js` | Split large output into mobile-friendly section files |
+| `skills/SKILL.md` | opencode agent skill — convert walkthroughs |
+| `skills/retroachievements-skill.md` | opencode agent skill — AI-powered achievement matching |
