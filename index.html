@@ -137,7 +137,7 @@ async function loadSection(idx) {
   try {
     const res = await fetch('guide/' + s.file);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const md = await res.text();
+    let md = await res.text();
     $('content').innerHTML = await marked.parse(md);
     updateNav();
     highlightToc(s.num);
@@ -205,6 +205,20 @@ document.addEventListener('keydown', e => {
   if (e.target.closest('input')) return;
   if (e.key === 'ArrowLeft') goPrev();
   if (e.key === 'ArrowRight') goNext();
+});
+
+// Intercept .md links in content to stay in the reader
+$('content').addEventListener('click', e => {
+  const a = e.target.closest('a');
+  if (!a) return;
+  const href = a.getAttribute('href');
+  if (!href || href.startsWith('http') || href.startsWith('#')) return;
+  if (href.endsWith('.md')) {
+    e.preventDefault();
+    const file = href.replace(/^.*\//, '');
+    const s = flatSections.find(s => s.file === file);
+    if (s) loadByNum(s.num);
+  }
 });
 
 loadToc();
