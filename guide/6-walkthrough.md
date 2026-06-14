@@ -1,5 +1,8 @@
 <a id="s6"></a>
 
+> 🥉 **Victory Through Defeat** — Equip Gryz with a rare axe from a Chaos Bringer. _(RetroAchievements · 5 pts)_
+
+
 # 6. Walkthrough
 
 

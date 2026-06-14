@@ -1,5 +1,9 @@
 <a id="s4"></a>
 
+> 🥉 **Inventory, Attack!** — Use a non-consumable item in battle to affect your enemies, except Psycho Wand. _(RetroAchievements · 2 pts)_
+> 🥉 **Inventory, Assist!** — Use a non-consumable item in battle to support your allies. _(RetroAchievements · 2 pts)_
+
+
 # 4. Terminology
 
 

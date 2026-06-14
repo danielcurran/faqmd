@@ -1,5 +1,8 @@
 <a id="s18"></a>
 
+> 🥉 **Encore!** — Access the hidden Sound Test. _(RetroAchievements · 1 pts)_
+
+
 # 18. Sound Test
 
 

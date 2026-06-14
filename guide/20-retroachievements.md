@@ -22,3 +22,14 @@ walkthrough, then drop me a line too.
 
 Thanks.
 ```
+
+
+
+<a id="s-achievements"></a>
+
+## RetroAchievements
+
+These achievements could not be matched to a specific walkthrough section:
+
+- 🥉 **Triple Threat** — Execute Combo: TriBlaster. _(· 5 pts)_
+- 🥉 **Ultimate Destruction** — Execute Combo: Destruct. _(· 5 pts)_

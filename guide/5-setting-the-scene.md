@@ -1,5 +1,8 @@
 <a id="s5"></a>
 
+> 🥉 **The Millennium Man** — Meet Lutz. _(RetroAchievements · 5 pts)_
+
+
 # 5. Setting the Scene
 
 
