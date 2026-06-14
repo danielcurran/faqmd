@@ -2,6 +2,7 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const { reformat } = require('./reformat');
 
 const URL = process.argv[2];
 const OUTPUT = process.argv[3] || path.join(__dirname, 'walkthrough.md');
@@ -76,22 +77,7 @@ function splitSections(text, tocEntries) {
 function escapeMd(t) { return t.replace(/[\[\]\(\)#*_`]/g, ''); }
 function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
 
-// Format content for mobile-friendly reading while preserving structure.
-// Everything stays in code blocks for layout fidelity.
-function formatContent(content) {
-  const lines = content.split('\n');
-  const cleaned = [];
-  for (const line of lines) {
-    // Strip purely decorative lines
-    if (/^[\*\-_=¯]{30,}$/.test(line.trim())) continue;
-    // Strip TOC reference leaks
-    if (/^\d+\.\d+(?:\.\d+)*\.?\s+[A-Z][\w\s'-]{3,50}\s{3,}C[A-Z]{4}\s*$/.test(line.trim())) continue;
-    cleaned.push(line);
-  }
-  const text = cleaned.join('\n').replace(/\n{3,}/g, '\n\n').trim();
-  if (!text) return '';
-  return '```\n' + text + '\n```';
-}
+
 
 (async function () {
   let html;
@@ -125,7 +111,7 @@ function formatContent(content) {
   for (const s of sections) {
     md += '<a id="' + anchorId(s) + '"></a>\n\n';
     md += '#'.repeat(s.level) + ' ' + s.num + '. ' + s.title + '\n\n';
-    md += formatContent(s.content) + '\n\n';
+    md += reformat(s.content) + '\n\n';
   }
 
   fs.writeFileSync(OUTPUT, md);
