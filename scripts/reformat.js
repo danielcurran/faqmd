@@ -72,6 +72,7 @@ function reformatBlock(lines) {
 
 function formatDecorativeText(lines) {
   const cleaned = [];
+  let anyChanged = false;
   for (const line of lines) {
     const orig = line.trim();
     if (!orig || /^[\/\\¯_|\-=\s]+$/.test(orig)) continue;
@@ -82,16 +83,15 @@ function formatDecorativeText(lines) {
          .replace(/^[\/\\]+\s*/, '')
          .replace(/[\/\\¯_|=\-]{2,}/g, ' ')
          .replace(/\s+/g, ' ').trim();
-    // Only include if decorative chars were actually stripped
-    if (s && s !== orig) cleaned.push(s);
+    if (s && s !== orig) {
+      cleaned.push('**' + s + '**');
+      anyChanged = true;
+    } else if (s) {
+      cleaned.push(s);
+    }
   }
-  if (cleaned.length === 0) return '';
-  const text = cleaned.join(' ').replace(/\s+/g, ' ').trim();
-  const special = (text.match(/[^a-zA-Z0-9\s:]/g) || []).length;
-  if (text.length > 1 && special < text.length * 0.4) {
-    return '**' + text + '**\n\n';
-  }
-  return null;
+  if (!anyChanged) return null;
+  return cleaned.join('\n\n') + '\n\n';
 }
 
 // --- Line-level classification ---
