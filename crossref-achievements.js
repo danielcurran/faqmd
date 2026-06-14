@@ -15,14 +15,14 @@ if (!USERNAME || !API_KEY) {
   process.exit(1);
 }
 
-const auth = buildAuthorization({ userName: USERNAME, webApiKey: API_KEY });
+const auth = buildAuthorization({ username: USERNAME, webApiKey: API_KEY });
 
 const inputFile = process.argv[2] || 'walkthrough.md';
 const gameArg = process.argv[3];
 
 if (!gameArg) {
   console.error('Usage: node crossref-achievements.js <markdown-file> <RA-game-id-or-name>');
-  console.error('  node crossref-achievements.js walkthrough.md 5633');
+  console.error('  node crossref-achievements.js walkthrough.md 50');
   console.error('  node crossref-achievements.js walkthrough.md "Phantasy Star IV"');
   process.exit(1);
 }
@@ -276,7 +276,7 @@ function injectAchievements(md, achievements, sections) {
 (async function () {
   const gameId = await resolveGameId(gameArg);
   console.log('Fetching achievements for game ID ' + gameId + '...');
-  const data = await getGameInfoAndUserProgress(auth, { gameId, userName: USERNAME });
+  const data = await getGameInfoAndUserProgress(auth, { gameId, username: USERNAME });
 
   const achievements = Object.values(data.achievements || {}).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   console.log('Found ' + achievements.length + ' achievements');
