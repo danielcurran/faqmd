@@ -5,37 +5,33 @@
 
 # 5. Setting the Scene
 
-
-```
 "The long, long struggle of
  ancient times finally ended...
 
- The victor sacrificed
+The victor sacrificed
  the vanquished to the heavens.
 
- Four bells tolled.
+Four bells tolled.
  Four torches were lit.
 
- And the world continued
+And the world continued
  for thousands of years..."
 
+PHANTASY STAR
 
-        PHANTASY STAR
-
-  The End of the Millennium
-
+The End of the Millennium
 
 "The Algo solar system,
  somewhere in space...
 
- Once a brilliant civilization
+Once a brilliant civilization
  flourished here.
  The citizens devoted themselves
  to art and the sciences,
  and life was prosperous
  and good.
 
- Then a series of disasters
+Then a series of disasters
  struck.
  The system-wide management
  system, 'Mother Brain,' was
@@ -46,15 +42,15 @@
  advanced technological culture
  was lost.
 
- Society declined,
+Society declined,
  spiralling downward until
  at last only a few scattered
  groups even remembered there
  once were better times.
 
- A thousand years passed.
+A thousand years passed.
 
- At last, civilization is once
+At last, civilization is once
  more on the rise across the Algo
  system.
  People are again turning to
@@ -62,9 +58,8 @@
  Old knowledge is being
  rediscovered.
 
- But just as things look
+But just as things look
  brighter, beyond a threshold
  long thought closed, a dark and
  very ancient evil stirs..."
 6. Walkthrough                                                        CWKTH
-```

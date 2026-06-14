@@ -5,14 +5,11 @@
 
 # 18. Sound Test
 
-
-```
 After the game has been completed, pressing 'B' on the Title Menu will open
 the Phantasy Star IV sound test. The list of each track is given below,
 along with a short description of each track's purpose in the game:
 
-
- 1 - THE END OF THE MILLENNIUM - Introduction music
+1 - THE END OF THE MILLENNIUM - Introduction music
  2 - MOTABIA TOWN              - Motavian town music
  3 - SUSPICION                 - Principal's and Juza's theme
  4 - INN                       - Inn music
@@ -61,4 +58,3 @@ along with a short description of each track's purpose in the game:
 47 - STAFF ROLL                - Credits music
 48 - PAO-PAO!                  - Hunters' Guild dance show music
 19. Acknowledgements                                                  CAKNW
-```

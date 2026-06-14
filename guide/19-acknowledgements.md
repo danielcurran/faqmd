@@ -2,8 +2,6 @@
 
 # 19. Acknowledgements
 
-
-```
 Me
 
 Jonathan Mathews' ASCII Generator
@@ -27,4 +25,3 @@ as my permission is first obtained. Please do not remove, amend or add
 anything from this guide. If you feel something needs to be changed, please
 e-mail me at either address below and I will make appropriate adjustments.
 20. Contact Information                                               CCNIF
-```

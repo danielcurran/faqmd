@@ -1,4 +1,4 @@
-# Phantasy Star IV — Guide and Walkthrough
+# Introduction
 
 > By Seb Holt (Sir Pobalot) — Converted from GameFAQs
 

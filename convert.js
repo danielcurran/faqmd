@@ -87,31 +87,37 @@ function isPipeTable(lines) {
     const s = line.trim();
     if (!s) continue;
     const pipes = (s.match(/\|/g) || []).length;
-    if (pipes >= 2) pipeCounts.push(pipes);
+    // Table rows need 3+ pipes and actual data between them
+    if (pipes >= 3) {
+      const cells = s.split('|').map(c => c.trim());
+      const meaningful = cells.filter(c => c && c.length > 1 && !/^[¯\-_=*]+$/.test(c));
+      if (meaningful.length >= 2) pipeCounts.push(pipes);
+    }
   }
-  // Table if at least 3 lines have consistent pipe counts and at least 2 lines
+  // Need at least 2 data rows with consistent pipe count
   if (pipeCounts.length < 2) return false;
   const mostCommon = pipeCounts.sort((a,b) => pipeCounts.filter(x => x===a).length - pipeCounts.filter(x => x===b).length).pop();
   return pipeCounts.filter(x => x === mostCommon).length >= 2;
 }
 
+function isPartyBlock(lines) {
+  const text = lines.join(' ').toLowerCase();
+  return /starting (party|level|equipment)/i.test(text) ||
+         /recommended/i.test(text) ||
+         /you begin with/i.test(text) ||
+         /joins the party/i.test(text) ||
+         /^\s*[a-z]+ (joins|leaves)/im.test(text) ||
+         /equipment\s{2,}[¯]/i.test(text);
+}
+
 function isAsciiArt(line) {
   const s = line.trim();
   if (!s) return false;
-  // Box-drawing patterns (maps, diagrams)
   if ((s.match(/[\/\\\|\-]/g) || []).length >= 5 && (s.match(/[a-zA-Z]/g) || []).length < 5) return true;
-  // Lines where special chars heavily outnumber letters
   const letters = (s.match(/[a-zA-Z]/g) || []).length;
   const special = (s.match(/[^a-zA-Z0-9\s]/g) || []).length;
   if (special > 0 && special > letters * 3) return true;
   return false;
-}
-
-function isPartyBlock(lines) {
-  const text = lines.join(' ').toLowerCase();
-  return /starting (party|level|equipment|character)/i.test(text) ||
-         /recommended/i.test(text) ||
-         /you begin with/i.test(text);
 }
 
 function asciiTableToMarkdown(lines) {
@@ -157,10 +163,10 @@ function formatContent(content) {
     
     if (nonDecorative.length === 0) {
       // All decorative — skip entirely
-    } else if (isPipeTable(nonDecorative)) {
-      blocks.push(asciiTableToMarkdown(currentBlock));
     } else if (isPartyBlock(nonDecorative)) {
       blocks.push('> ' + text.replace(/\n/g, '\n> '));
+    } else if (isPipeTable(nonDecorative)) {
+      blocks.push(asciiTableToMarkdown(currentBlock));
     } else if (nonDecorative.some(l => isAsciiArt(l))) {
       blocks.push('```\n' + text + '\n```');
     } else {
