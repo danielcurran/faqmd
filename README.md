@@ -5,7 +5,7 @@ Convert GameFAQs walkthroughs into hyperlinked markdown — via Node.js script o
 
 **[faqmd.dev](https://faqmd.dev)** hosts walkthroughs generated with this tool.
 Content is managed in a [private repo](https://github.com/danielcurran/faqmd-content);
-only the initial example walked through lives here.
+only the initial example walkthrough lives here.
 
 **Want your generated walkthrough on the site?** [Open a submission
 issue](https://github.com/danielcurran/faqmd/issues/new?title=Submission%3A+%5Bgame+name%5D&body=Link+to+the+converted+markdown%3A%0A%0AOriginal+GameFAQs+URL%3A%0A%0AAuthor+credit%3A)
