@@ -3,19 +3,22 @@
 ## Purpose
 Converts GameFAQs plain-text walkthroughs into clean, readable markdown files with a table of contents, internal anchor links, and properly formatted sections.
 
+## Repository Separation
+This repo contains the **converter tool** and **opencode agent skills** only. Walkthrough content and the [faqmd.dev](https://faqmd.dev) site are in a separate repo:
+- **[faqmd-walkthroughs](https://github.com/danielcurran/faqmd-walkthroughs)** — hosted walkthrough content (HTML, reader app, guide files, deploy workflow)
+
 ## Tech Stack
 - Node.js
-- `@retroachievements/api` (for achievement cross-referencing)
 
 ## Key Files
-- `scripts/convert.js` — Main converter: fetch GameFAQS walkthrough, parse, format to markdown
+- `scripts/convert.js` — Main converter: fetch GameFAQs walkthrough, parse, format to markdown
 - `scripts/split-guide.js` — Split a large walkthrough markdown into per-section files for mobile-friendly browsing
 - `skills/SKILL.md` — opencode agent skill for converting walkthroughs
 - `skills/retroachievements-skill.md` — opencode agent skill for AI-powered achievement matching
-- `guide/` — Split guide output (per-section markdown files + index.md TOC)
+- `.gitignore` — Ignores node_modules/, generated walkthrough files, and guide/ (local artifact only)
 
 ## Conventions
-- Output saved as `guide-<faq-id>.md`
+- Output saved as `walkthrough.md` or `guide-<faq-id>.md`
 - Large guides (>500KB) should be split with `split-guide.js` for mobile readability
 - Split output goes in `guide/`: `index.md` + one file per section named `<section-num>-<slug>.md`
 - Anchor IDs: replace dots with hyphens, prefix with `s` (e.g., `s6-4-8`)
