@@ -1,5 +1,5 @@
 > 📑 [↑ Index](./index.md)  
-> ← [5. Setting the Scene](5-setting-the-scene.md) · [6.1. An Ancient Civilization](6.1-an-ancient-civilization.md) →
+> ← [5. Setting the Scene](5-setting-the-scene.md) · [6.1.1. The Town of Learning](6.1.1-the-town-of-learning.md) →
 
 ---
 
@@ -51,4 +51,4 @@ background of Chaz and Alys standing on a precipice overlooking Piata.
 ---
 
 > 📑 [↑ Index](./index.md)  
-> ← [5. Setting the Scene](5-setting-the-scene.md) · [6.1. An Ancient Civilization](6.1-an-ancient-civilization.md) →
+> ← [5. Setting the Scene](5-setting-the-scene.md) · [6.1.1. The Town of Learning](6.1.1-the-town-of-learning.md) →

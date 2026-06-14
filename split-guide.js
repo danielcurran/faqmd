@@ -37,27 +37,66 @@ for (let i = headerEnd; i < lines.length; i++) {
 }
 
 // Build sections from anchor boundaries
-const sections = [];
+const rawSections = [];
 for (let a = 0; a < anchorLines.length; a++) {
   const startLine = anchorLines[a].line;
   const endLine = a + 1 < anchorLines.length ? anchorLines[a + 1].line : lines.length;
   const body = lines.slice(startLine, endLine).join('\n').trim();
-  sections.push({ anchor: anchorLines[a].anchor, body });
+  rawSections.push({ anchor: anchorLines[a].anchor, body });
 }
+
+// Detect stub sections: heading + code-block TOC reference only, no real content
+// Stub sections are typically < 500 chars (heading + decorative TOC code block)
+// Real sections have 1000+ chars of walkthrough content
+function isStub(section) {
+  return section.body.length < 500;
+}
+
+// Merge stub sections into their next non-stub sibling
+// When multiple stubs precede a real section, all their headings are prepended
+// Track stub→target mapping for TOC redirects
+const stubTargets = {}; // stubAnchor → targetSection
+const sections = [];
+for (let a = 0; a < rawSections.length; a++) {
+  if (isStub(rawSections[a])) {
+    // Collect consecutive stubs
+    const stubs = [rawSections[a]];
+    while (a + 1 < rawSections.length && isStub(rawSections[a + 1])) {
+      stubs.push(rawSections[++a]);
+    }
+    // Prepend stub headings to the next non-stub section
+    if (a + 1 < rawSections.length) {
+      const target = rawSections[a + 1];
+      const prefixLines = [];
+      for (const stub of stubs) {
+        const bodyLines = stub.body.split('\n');
+        for (const l of bodyLines) {
+          if (l.match(/^<a id=/) || l.match(/^#+\s/)) prefixLines.push(l);
+        }
+        stubTargets[stub.anchor] = target;
+      }
+      target.body = prefixLines.join('\n') + '\n\n' + target.body;
+    }
+  } else {
+    sections.push(rawSections[a]);
+  }
+}
+console.log(`Merged ${rawSections.length - sections.length} stub sections`);
 
 // Extract section number from anchor (e.g. "s6-4-8" → "6.4.8")
 function getNumber(anchor) {
   return anchor.replace(/^s/, '').replace(/-/g, '.');
 }
 
-// Extract heading text from section body
+// Extract heading text from section body (use the last/deepest heading)
 function getHeading(body) {
   const bodyLines = body.split('\n');
+  let last = '';
   for (const line of bodyLines) {
     const hMatch = line.match(/^#+\s+(.+)/);
-    if (hMatch) return hMatch[1].trim();
+    if (hMatch) last = hMatch[1].trim();
   }
-  return '';
+  return last;
 }
 
 // Create a URL-safe slug from heading text
@@ -184,8 +223,11 @@ for (const line of indexContent) {
   const tocMatch = line.match(/^(\s*-\s+\[)(.+?)(\]\(#)(s[\d-]+)(\)\s*)$/);
   if (tocMatch) {
     const anchor = tocMatch[4];
-    const entry = sections.find(s => s.anchor === anchor);
-    if (entry) {
+    let entry = sections.find(s => s.anchor === anchor);
+    if (!entry && stubTargets[anchor]) {
+      entry = stubTargets[anchor];
+    }
+    if (entry && entry.filename) {
       newTocLines.push(`${tocMatch[1]}${tocMatch[2]}](${entry.filename})`);
     } else {
       newTocLines.push(line);

@@ -1,5 +1,5 @@
 > 📑 [↑ Index](./index.md)  
-> ← [1.2. Version History](1.2-version-history.md) · [3. Game Mechanics](3-game-mechanics.md) →
+> ← [1.2. Version History](1.2-version-history.md) · [3.1. The Field](3.1-the-field.md) →
 
 ---
 
@@ -50,4 +50,4 @@ Battle:
 ---
 
 > 📑 [↑ Index](./index.md)  
-> ← [1.2. Version History](1.2-version-history.md) · [3. Game Mechanics](3-game-mechanics.md) →
+> ← [1.2. Version History](1.2-version-history.md) · [3.1. The Field](3.1-the-field.md) →
