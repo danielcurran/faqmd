@@ -3,6 +3,17 @@
 Convert GameFAQs walkthroughs into hyperlinked markdown — via Node.js script or
 [opencode](https://opencode.ai) agent skill.
 
+**[faqmd.dev](https://faqmd.dev)** hosts walkthroughs generated with this tool.
+The initial example is Phantasy Star IV.
+
+**Want your generated walkthrough on the site?** [Open a submission
+issue](https://github.com/danielcurran/faqmd/issues/new?title=Submission%3A+%5Bgame+name%5D&body=Link+to+the+converted+markdown%3A%0A%0AOriginal+GameFAQs+URL%3A%0A%0AAuthor+credit%3A)
+with a link to your converted markdown. Inclusion is at the admin's discretion.
+
+No walkthroughs are committed to this repo beyond the initial example.
+
+---
+
 ## Core tool (everyone)
 
 The converter and skill are standalone and work for any GameFAQs walkthrough.
