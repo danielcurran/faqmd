@@ -96,6 +96,29 @@ tool on the `.md` file). You're looking for evidence that the achievement's
 trigger condition (location, character, item, boss name) appears IN THAT
 SECTION.
 
+**Research online for ambiguous achievements.** When the walkthrough content
+alone doesn't give a clear answer, check the RetroAchievements website:
+
+- **Achievement page**: `https://retroachievements.org/achievement/<id>` —
+  contains developer notes, linked hashes, and sometimes forum references
+- **Game forum**: `https://retroachievements.org/game/<game-id>/forum` — search
+  for the achievement title to find player discussions, tips, and spoiler posts
+  that clarify WHEN and WHERE the achievement actually triggers
+- **Linked hashes**: If the achievement has linked hash data, it may reveal
+  which specific ROM address or memory value triggers it (useful for
+  understanding the exact trigger point in the game)
+
+Use webfetch to pull these pages. For missable achievements in particular,
+forum posts often contain critical information like:
+- The exact point-of-no-return after which the achievement becomes unobtainable
+- Whether the achievement requires a specific party composition
+- Whether it fails if certain story events have already occurred
+- Player-confirmed reports of where in the walkthrough they earned it
+
+Cross-reference forum findings against the walkthrough sections — the
+walkthrough author might have covered the missable window without explicitly
+flagging it as missable.
+
 **Confidence levels:**
 
 | Level | Criteria |
@@ -122,8 +145,18 @@ If confidence is Low for any section, list it separately so the user can verify.
    These are best placed in a dedicated appendix section (e.g., the items or
    enemies section at the end of the walkthrough), NOT in a story section.
 
-5. **Missable achievements**: Flag these explicitly. The achievement
-   description usually includes "(Missable)". Note this in the callout.
+5. **Missable achievements**: These are the most error-prone. The achievement
+   description typically includes "(Missable)" but not WHEN it becomes
+   unobtainable. Do NOT just match to the first section that mentions the
+   related content. Research the achievement page and forum for the exact
+   cutoff point. The callout should include a **⚠ Missable** warning and note
+   the point of no return:
+   ```markdown
+   > 🥈 **Achievement Title** — Description _(RetroAchievements · 10 pts)_
+   > ⚠ **Missable:** Must be completed before [specific event/location].
+   ```
+   If the forum doesn't clarify the cutoff, flag the achievement as "missable —
+   cutoff unknown" so the user can research manually.
 
 6. **Post-game / secret achievements**: Sound test, optional dungeons, secret
    items — match to their dedicated sections (not to story sections).
