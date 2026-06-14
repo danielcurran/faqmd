@@ -286,9 +286,13 @@ a:hover { text-decoration: underline; color: #f5e88a; }
   #content ul, #content ol, #content blockquote, #content hr {
     max-width: none; margin-left: 0; margin-right: 0;
   }
-  #content pre, #content table { white-space: pre-wrap; word-break: break-word; overflow-x: hidden; }
-  #content pre code { white-space: pre-wrap; word-break: break-word; }
+  #content pre, #content table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 0.75rem;
+    max-width: 100%;
   }
+  #content pre code { font-size: 0.75rem; }
   #nav-top, #nav-bottom { padding: 8px 12px; }
   .nav-btn { padding: 6px 14px; font-size: 0.85rem; }
 }
@@ -360,6 +364,7 @@ function buildTocHtml(nodes) {
 $('toc').addEventListener('click', e => {
   const item = e.target.closest('.toc-item');
   if (!item || !item.dataset.file) return;
+  if (sidebarOpen) toggleSidebar();
   loadByNum(item.dataset.num);
 });
 
@@ -378,7 +383,6 @@ async function loadSection(idx) {
     highlightToc(s.num);
     $('content').scrollTop = 0;
     location.hash = '#' + s.num;
-    if (sidebarOpen) toggleSidebar();
   } catch(e) {
     $('content').innerHTML = '<p>Error loading section.</p><p style="color:var(--ff-muted);font-size:0.8rem">' + e.message + '</p>';
   }
