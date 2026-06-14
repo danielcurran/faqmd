@@ -142,6 +142,28 @@ file remains self-documenting.
 Leave two blank lines between replacements and surrounding content
 so the markdown parser handles them correctly.
 
+### Step 4: Polish decorative labels
+
+The `formatDecorativeText()` function in `scripts/reformat.js` strips
+simple decorative elements like `// DUNGEON #2 ¯¯\` and `\ Boss: Igglanova`
+to `**DUNGEON #2**` and `**Boss:** Igglanova`. Scan for these bold labels
+and make them visually clean:
+
+**Dungeon/area headers** (all-caps or short bold labels like
+`**DUNGEON #2**`, `**BIRTH VALLEY**`): wrap in a `<div class="section-marker">`
+to give them visual weight as section dividers:
+```html
+<div class="section-marker">**DUNGEON #2**</div>
+```
+
+**Boss/sub-labels** (`**Boss:** Igglanova`, `**Enemies:** Xanafalgue`):
+ensure there is a blank line before and after them for spacing. If
+multiple labels are consecutive, group them.
+No special HTML wrap needed — bold markdown alone is sufficient.
+
+**Treasure/stat labels** already formatted as `**Key:** Value`:
+these are already clean. Just ensure blank line spacing around them.
+
 ### Summary report
 
 ```
@@ -152,8 +174,9 @@ art-modernize complete
   menu:       N modernized
   equipment:  N modernized
   unknown:    N improved, N kept as-is
+  decorative: N labels polished
   ───────────────────
-  Total: N blocks processed
+  Total: N blocks processed + N labels polished
 ```
 
 ---

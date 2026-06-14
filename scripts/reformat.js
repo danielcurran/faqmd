@@ -58,10 +58,40 @@ function reformatBlock(lines) {
     return formatAscii(lines);
   }
 
-  // Phase 3: Pure-type formatting
+  // Phase 3: Strip simple decorative elements to plain text
+  const dec = formatDecorativeText(lines);
+  if (dec !== null) return dec;
+
+  // Phase 4: Pure-type formatting
   if (isTableBlock(lines)) return formatTable(lines);
   if (isStatBlock(lines)) return formatStatBlock(lines);
   return formatProse(lines);
+}
+
+// --- Decorative text stripping ---
+
+function formatDecorativeText(lines) {
+  const cleaned = [];
+  for (const line of lines) {
+    const orig = line.trim();
+    if (!orig || /^[\/\\¯_|\-=\s]+$/.test(orig)) continue;
+    if (/^[\*\-_=¯]{8,}$/.test(orig)) continue;
+    let s = orig;
+    s = s.replace(/^\/\/\s*/, '')
+         .replace(/^\|?\s*\/\s*/, '')
+         .replace(/^[\/\\]+\s*/, '')
+         .replace(/[\/\\¯_|=\-]{2,}/g, ' ')
+         .replace(/\s+/g, ' ').trim();
+    // Only include if decorative chars were actually stripped
+    if (s && s !== orig) cleaned.push(s);
+  }
+  if (cleaned.length === 0) return '';
+  const text = cleaned.join(' ').replace(/\s+/g, ' ').trim();
+  const special = (text.match(/[^a-zA-Z0-9\s:]/g) || []).length;
+  if (text.length > 1 && special < text.length * 0.4) {
+    return '**' + text + '**\n\n';
+  }
+  return null;
 }
 
 // --- Line-level classification ---
@@ -113,7 +143,10 @@ function formatMixed(lines) {
     switch (group.type) {
       case 'stat':      return formatStatBlock(group.lines);
       case 'decorative': return '';
-      default:          return formatProse(group.lines);
+      default: {
+        const dec = formatDecorativeText(group.lines);
+        return dec !== null ? dec : formatProse(group.lines);
+      }
     }
   }).filter(s => s).join('\n\n');
 }
