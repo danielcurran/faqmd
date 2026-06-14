@@ -120,7 +120,21 @@ function hasConsistentPipes(lines) {
   const counts = lines.map(l => (l.match(/\|/g) || []).length).filter(c => c > 0);
   if (counts.length < 2) return false;
   const mode = counts.sort((a, b) => counts.filter(v => v === a).length - counts.filter(v => v === b).length).pop();
-  return counts.filter(c => c === mode).length / counts.length >= 0.6;
+  if (counts.filter(c => c === mode).length / counts.length < 0.6) return false;
+
+  // Verify this is tabular data, not ASCII art with pipes
+  let wordCells = 0, totalCells = 0;
+  let artPatterns = 0;
+  for (const line of lines) {
+    const cells = line.split('|').map(c => c.trim()).filter(c => c);
+    for (const cell of cells) {
+      totalCells++;
+      if (/[a-zA-Z]{2,}/.test(cell)) wordCells++;
+      if (/[^\w\s]{3,}/.test(cell)) artPatterns++;
+    }
+  }
+  if (totalCells > 0 && artPatterns / totalCells >= 0.3) return false;
+  return totalCells > 0 && wordCells / totalCells >= 0.5;
 }
 
 // --- Formatters ---
