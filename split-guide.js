@@ -261,6 +261,21 @@ for (const e of tocEntries) {
 const indexFile = path.join(outputDir, 'index.md');
 fs.writeFileSync(indexFile, indexContent.join('\n'));
 
+// Write TOC as JSON for the reader app
+const tocTree = [];
+const stack = [{ children: tocTree, depth: -1 }];
+for (const e of tocEntries) {
+  const depth = (e.num.match(/\./g) || []).length;
+  const node = { num: e.num, title: e.title, file: e.filename, depth, children: [] };
+  while (stack.length > 1 && stack[stack.length - 1].depth >= depth) {
+    stack.pop();
+  }
+  stack[stack.length - 1].children.push(node);
+  stack.push({ ...node, depth });
+}
+const tocJson = path.join(outputDir, 'toc.json');
+fs.writeFileSync(tocJson, JSON.stringify(tocTree, null, 2));
+
 // Write search index
 const indexJson = path.join(outputDir, 'search-index.json');
 fs.writeFileSync(indexJson, JSON.stringify(searchIndex, null, 2));
