@@ -164,7 +164,13 @@ a:hover { text-decoration: underline; color: #f5e88a; }
 #content {
   flex: 1; overflow-y: auto;
   padding: 28px 36px;
-  max-width: 800px; width: 100%; margin: 0 auto;
+  max-width: 1050px; width: 100%; margin: 0 auto;
+}
+#content h1, #content h2, #content h3, #content p,
+#content ul, #content ol, #content blockquote, #content hr {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 #content h1 {
   font-family: var(--ff-font);
@@ -275,7 +281,11 @@ a:hover { text-decoration: underline; color: #f5e88a; }
   }
   #sidebar.show { transform: translateX(0); }
   #menu-btn { display: block; }
-  #content { padding: 18px 16px; }
+  #content { max-width: none; padding: 18px 16px; }
+  #content h1, #content h2, #content h3, #content p,
+  #content ul, #content ol, #content blockquote, #content hr {
+    max-width: none; margin-left: 0; margin-right: 0;
+  }
   #nav-top, #nav-bottom { padding: 8px 12px; }
   .nav-btn { padding: 6px 14px; font-size: 0.85rem; }
 }
