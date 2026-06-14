@@ -1,3 +1,8 @@
+> 📑 [↑ Index](./index.md)  
+> ← [12.2.12. EMP](12.2.12-emp.md) · [13.1. Expendables](13.1-expendables.md) →
+
+---
+
 <a id="s13"></a>
 
 # 13. Items
@@ -17,3 +22,8 @@ If the price of an item is preceeded by the letter 'S', the item cannot be
 bought and the sale value is given. If there is no price given, the item
 cannot be bought, sold or discarded.
 ```
+
+---
+
+> 📑 [↑ Index](./index.md)  
+> ← [12.2.12. EMP](12.2.12-emp.md) · [13.1. Expendables](13.1-expendables.md) →

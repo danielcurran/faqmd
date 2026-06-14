@@ -1,3 +1,8 @@
+> 📑 [↑ Index](./index.md)  
+> ← [8.2. Non-playable Characters](8.2-non-playable-characters.md) · [10. Techniques](10-techniques.md) →
+
+---
+
 <a id="s9"></a>
 
 # 9. Character Statistics
@@ -520,3 +525,8 @@ Seth - Skill 1   Skill 2   Skill 3   Skill 4
   has been acquired.
 10. Techniques                                                        CTCNQ
 ```
+
+---
+
+> 📑 [↑ Index](./index.md)  
+> ← [8.2. Non-playable Characters](8.2-non-playable-characters.md) · [10. Techniques](10-techniques.md) →

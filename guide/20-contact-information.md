@@ -1,3 +1,8 @@
+> 📑 [↑ Index](./index.md)  
+> ← [19. Acknowledgements](19-acknowledgements.md)
+
+---
+
 <a id="s20"></a>
 
 # 20. Contact Information
@@ -22,3 +27,8 @@ walkthrough, then drop me a line too.
 
 Thanks.
 ```
+
+---
+
+> 📑 [↑ Index](./index.md)  
+> ← [19. Acknowledgements](19-acknowledgements.md)

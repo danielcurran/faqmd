@@ -1,3 +1,8 @@
+> 📑 [↑ Index](./index.md)  
+> ← [16.7. Dungeons](16.7-dungeons.md) · [18. Sound Test](18-sound-test.md) →
+
+---
+
 <a id="s17"></a>
 
 # 17. Party Conversation
@@ -398,3 +403,8 @@ On the top floor of Anger Tower (MUMBL)
       Chaz: 'What! Where is this?... Where is everybody!?'
 18. Sound Test                                                        CSDTS
 ```
+
+---
+
+> 📑 [↑ Index](./index.md)  
+> ← [16.7. Dungeons](16.7-dungeons.md) · [18. Sound Test](18-sound-test.md) →

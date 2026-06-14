@@ -1,3 +1,8 @@
+> 📑 [↑ Index](./index.md)  
+> ← [9. Character Statistics](9-character-statistics.md) · [10.1. By Character](10.1-by-character.md) →
+
+---
+
 <a id="s10"></a>
 
 # 10. Techniques
@@ -26,3 +31,8 @@ different types, along with TP costs and information on who or what can use
 the Techniques.
 -------------------------------------
 ```
+
+---
+
+> 📑 [↑ Index](./index.md)  
+> ← [9. Character Statistics](9-character-statistics.md) · [10.1. By Character](10.1-by-character.md) →

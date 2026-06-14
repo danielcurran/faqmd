@@ -1,3 +1,8 @@
+> 📑 [↑ Index](./index.md)  
+> ← [5. Setting the Scene](5-setting-the-scene.md) · [6.1. An Ancient Civilization](6.1-an-ancient-civilization.md) →
+
+---
+
 <a id="s6"></a>
 
 # 6. Walkthrough
@@ -42,3 +47,8 @@ background of Chaz and Alys standing on a precipice overlooking Piata.
   is behind this outbreak... and
   when and how will it all end?"
 ```
+
+---
+
+> 📑 [↑ Index](./index.md)  
+> ← [5. Setting the Scene](5-setting-the-scene.md) · [6.1. An Ancient Civilization](6.1-an-ancient-civilization.md) →

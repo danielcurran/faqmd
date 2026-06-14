@@ -1,3 +1,8 @@
+> 📑 [↑ Index](./index.md)  
+> ← [3.3.3. Party Menu](3.3.3-party-menu.md) · [5. Setting the Scene](5-setting-the-scene.md) →
+
+---
+
 <a id="s4"></a>
 
 # 4. Terminology
@@ -245,3 +250,8 @@ Critical   - A critical attack can be inflicted by characters and enemies,
              combat in either side's favour.
 5. Setting the Scene                                                  CSTTS
 ```
+
+---
+
+> 📑 [↑ Index](./index.md)  
+> ← [3.3.3. Party Menu](3.3.3-party-menu.md) · [5. Setting the Scene](5-setting-the-scene.md) →

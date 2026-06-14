@@ -1,3 +1,8 @@
+> 📑 [↑ Index](./index.md)  
+> ← [1.2. Version History](1.2-version-history.md) · [3. Game Mechanics](3-game-mechanics.md) →
+
+---
+
 <a id="s2"></a>
 
 # 2. Controls
@@ -41,3 +46,8 @@ Battle:
    D-Pad - Scroll options
 3. Game Mechanics                                                     CGMCN
 ```
+
+---
+
+> 📑 [↑ Index](./index.md)  
+> ← [1.2. Version History](1.2-version-history.md) · [3. Game Mechanics](3-game-mechanics.md) →

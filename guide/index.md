@@ -2,6 +2,9 @@
 
 > By Seb Holt (Sir Pobalot) — Converted from GameFAQs
 
+> 💡 **Tip:** Press `t` in the GitHub app or website to search across all section files.
+
+
 ## Table of Contents
 
 - [1. Introduction](1-introduction.md)
@@ -218,7 +221,7 @@
 
 ---
 
-## Section Files
+## All Sections
 
 - [1. 1. Introduction](1-introduction.md)
   - [1.1. 1.1. Foreword](1.1-foreword.md)
