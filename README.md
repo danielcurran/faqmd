@@ -1,4 +1,4 @@
-# faqdown
+# guidedown
 
 Convert GameFAQs walkthroughs into hyperlinked markdown — via Node.js script or
 [opencode](https://opencode.ai) agent skill.
@@ -8,8 +8,8 @@ Convert GameFAQs walkthroughs into hyperlinked markdown — via Node.js script o
 ### Script
 
 ```bash
-git clone https://github.com/danielcurran/faqdown
-cd faqdown
+git clone https://github.com/danielcurran/guidedown
+cd guidedown
 node convert.js "https://gamefaqs.gamespot.com/genesis/563334-phantasy-star-iv/faqs/31907?print=1"
 ```
 
@@ -18,8 +18,8 @@ Output is saved as `phantasy-star-iv-guide-and-walkthrough.md`.
 ### opencode skill
 
 ```bash
-mkdir -p ~/.config/opencode/skills/faqdown
-cp SKILL.md ~/.config/opencode/skills/faqdown/SKILL.md
+mkdir -p ~/.config/opencode/skills/guidedown
+cp SKILL.md ~/.config/opencode/skills/guidedown/SKILL.md
 # Restart opencode, then ask:
 # "convert this gamefaqs walkthrough https://gamefaqs.gamespot.com/..."
 ```

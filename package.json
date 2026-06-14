@@ -1,5 +1,5 @@
 {
-  "name": "faqdown",
+  "name": "guidedown",
   "version": "1.0.0",
   "description": "Convert GameFAQs walkthroughs to markdown and cross-reference with RetroAchievements",
   "scripts": {
