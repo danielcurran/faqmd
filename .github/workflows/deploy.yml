@@ -1,0 +1,39 @@
+name: Deploy to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'  # daily sync
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout private content
+        uses: actions/checkout@v4
+        with:
+          repository: danielcurran/faqmd-content
+          path: _content
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Merge content
+        run: |
+          rm -rf guide
+          cp -r _content/guide guide
+          rm -rf _content
+
+      - name: Deploy to Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          force_orphan: true
