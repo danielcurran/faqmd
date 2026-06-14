@@ -1,4 +1,4 @@
-# guidedown — GameFAQs Walkthrough to Markdown Converter
+# faqmd — GameFAQs Walkthrough to Markdown Converter
 
 ## Purpose
 Converts GameFAQs plain-text walkthroughs into clean, readable markdown files with a table of contents, internal anchor links, and properly formatted sections.
