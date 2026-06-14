@@ -1,6 +1,6 @@
 ---
 name: faqdown
-description: Use when the user asks to convert a GameFAQs walkthrough to markdown, scrape a GameFAQs FAQ/guide, or create hyperlinked walkthrough files. Trigger keywords: gamefaqs, walkthrough, faqdown, faq, guide, scrape, convert, markdown, FAQ, print=1.
+description: "Use when the user asks to convert a GameFAQs walkthrough to markdown, scrape a GameFAQs FAQ/guide, or create hyperlinked walkthrough files. Trigger keywords: gamefaqs, walkthrough, faqdown, faq, guide, scrape, convert, markdown, FAQ, print=1."
 ---
 
 # faqdown — Convert GameFAQs Walkthroughs to Hyperlinked Markdown
