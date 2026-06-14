@@ -3,10 +3,14 @@ name: faqmd
 description: "Use when the user asks to convert a GameFAQs walkthrough to markdown, scrape a GameFAQs FAQ/guide, or create hyperlinked walkthrough files. Trigger keywords: gamefaqs, walkthrough, faqdown, faq, guide, scrape, convert, markdown, FAQ, print=1."
 ---
 
-# faqdown — Convert GameFAQs Walkthroughs to Hyperlinked Markdown
+# faqmd — Convert GameFAQs Walkthroughs to Hyperlinked Markdown
 
 Convert GameFAQs plain-text walkthroughs into clean, readable markdown files
 with a table of contents, internal anchor links, and properly formatted sections.
+
+> **Note:** The achievements cross-reference script (`crossref-achievements.js`)
+> is optional. You can run the core converter on its own without any
+> RetroAchievements integration.
 
 ## Step 1: Fetch the walkthrough
 
