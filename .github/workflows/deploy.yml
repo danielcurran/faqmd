@@ -29,7 +29,7 @@ jobs:
         run: |
           rm -rf guide
           cp -r _content/guide guide
-          cp _content/index.html _content/reader.html . 2>/dev/null || true
+          cp _content/index.html _content/reader.html _content/marked.js . 2>/dev/null || true
           cp _content/CNAME _content/.nojekyll . 2>/dev/null || true
           rm -rf _content
 
