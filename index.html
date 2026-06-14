@@ -26,6 +26,8 @@ a:hover { text-decoration:underline; }
 .toc-d1 { padding-left:32px; }
 .toc-d2 { padding-left:48px; }
 .toc-d3 { padding-left:64px; }
+.toc-folder { color:var(--text); font-weight:600; cursor:default; border-left-color:transparent !important; }
+.toc-folder:hover { background:transparent; }
 
 #main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 #nav-top, #nav-bottom { display:flex; justify-content:space-between; align-items:center; padding:8px 16px; background:var(--surface); border-bottom:1px solid var(--border); min-height:44px; gap:8px; flex-shrink:0; }
@@ -108,10 +110,12 @@ async function loadToc() {
 
 function renderToc(nodes) {
   const el = document.getElementById('toc');
-  el.innerHTML = nodes.map(n => 
-    `<div class="toc-item toc-d${n.depth}" data-num="${n.num}" data-file="${n.file}" onclick="loadByNum('${n.num}')">${n.num}. ${n.title}</div>` +
-    (n.children ? renderTocChildren(n.children) : '')
-  ).join('');
+  el.innerHTML = nodes.map(n => {
+    const clickable = n.file ? `onclick="loadByNum('${n.num}')"` : '';
+    const cls = n.file ? 'toc-item' : 'toc-item toc-folder';
+    return `<div class="${cls} toc-d${n.depth}" data-num="${n.num}" data-file="${n.file||''}" ${clickable}>${n.num}. ${n.title}</div>` +
+    (n.children ? renderTocChildren(n.children) : '');
+  }).join('');
 }
 function renderTocChildren(nodes) {
   return nodes.map(n =>
@@ -142,8 +146,8 @@ async function loadSection(idx) {
 }
 
 function loadByNum(num) {
-  const idx = flatSections.findIndex(s => s.num === num);
-  if (idx >= 0) loadSection(idx);
+  const s = flatSections.find(s => s.num === num);
+  if (s && s.file) loadSection(flatSections.indexOf(s));
 }
 
 function goPrev() { if (currentIdx > 0) loadSection(currentIdx - 1); }

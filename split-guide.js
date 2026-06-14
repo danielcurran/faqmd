@@ -112,35 +112,47 @@ function slugify(text) {
 }
 
 // Build parent chain for breadcrumb
-function getParents(idx, tocEntries) {
-  const parts = tocEntries[idx].num.split('.');
+function getParents(num, tocEntries) {
+  const parts = num.split('.');
   const parents = [];
   for (let p = 1; p < parts.length; p++) {
     const parentNum = parts.slice(0, p).join('.');
     const parent = tocEntries.find(e => e.num === parentNum);
-    if (parent && parent.num !== tocEntries[idx].num) {
+    if (parent && parent.num !== num) {
       parents.push(parent);
     }
   }
   return parents;
 }
 
-// Assign filenames, titles, numbers
-const tocEntries = [];
+// Assign filenames to real sections
 for (const s of sections) {
   const num = getNumber(s.anchor);
   const title = getHeading(s.body);
   const strippedTitle = title.replace(new RegExp(`^${num.replace(/\./g, '\\.')}\\.?\\s*`), '');
   const slug = slugify(strippedTitle) || slugify(title);
-  const depth = (num.match(/\./g) || []).length;
-  const indent = '  '.repeat(depth);
-  const filename = `${num}-${slug}.md`;
-
-  tocEntries.push({ indent, num, title, filename, strippedTitle });
-  s.filename = filename;
+  s.filename = `${num}-${slug}.md`;
   s.num = num;
   s.title = title;
   s.strippedTitle = strippedTitle;
+}
+
+// Build full TOC from rawSections (including stubs for proper tree hierarchy)
+const tocEntries = [];
+for (const rs of rawSections) {
+  const num = getNumber(rs.anchor);
+  const title = getHeading(rs.body);
+  const strippedTitle = title.replace(new RegExp(`^${num.replace(/\./g, '\\.')}\\.?\\s*`), '');
+  const depth = (num.match(/\./g) || []).length;
+  // Get the real section's filename (redirect stubs)
+  let filename = null;
+  const real = sections.find(s => s.num === num);
+  if (real) {
+    filename = real.filename;
+  } else if (stubTargets[rs.anchor]) {
+    filename = stubTargets[rs.anchor].filename;
+  }
+  tocEntries.push({ num, title, strippedTitle, filename, depth, anchor: rs.anchor });
 }
 
 // Build search index: word → [section numbers]
@@ -177,7 +189,7 @@ function display(sec) {
 
 function makeNavbar(sectionIdx) {
   const s = sections[sectionIdx];
-  const parents = getParents(sectionIdx, tocEntries);
+  const parents = getParents(s.num, tocEntries);
 
   // Find parent sections in the sections array
   const parentSections = parents.map(p => sections.find(sec => sec.num === p.num)).filter(Boolean);
@@ -255,7 +267,9 @@ indexContent.push('');
 indexContent.push('## All Sections');
 indexContent.push('');
 for (const e of tocEntries) {
-  indexContent.push(`${e.indent}- [${e.num}. ${e.title}](${e.filename})`);
+  const indent = '  '.repeat(e.depth);
+  const link = e.filename ? `[${e.num}. ${e.title}](${e.filename})` : `**${e.num}. ${e.title}**`;
+  indexContent.push(`${indent}- ${link}`);
 }
 
 const indexFile = path.join(outputDir, 'index.md');
