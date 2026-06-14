@@ -11,9 +11,9 @@ function isAsciiArtBlock(lines) {
   for (const line of lines) {
     const s = line.trim();
     if (!s) continue;
-    if ((s.match(/\|/g) || []).length >= 3) { artLines++; continue; }
+    if ((s.match(/\|/g) || []).length >= 5) { artLines++; continue; }
     if (/^[\*\-_=¯]{8,}$/.test(s)) { artLines++; continue; }
-    if ((s.match(/[\/\\\|\-]/g) || []).length >= 5) { artLines++; continue; }
+    if ((s.match(/[\/\\\|]/g) || []).length >= 5) { artLines++; continue; }
     const letters = (s.match(/[a-zA-Z]/g) || []).length;
     const special = (s.match(/[^a-zA-Z0-9\s]/g) || []).length;
     if (special > letters * 2 && special > 3) artLines++;
@@ -36,12 +36,86 @@ function isStatBlock(lines) {
   return kvLines.length / nonEmpty.length >= 0.4;
 }
 
-function classifyBlock(lines) {
-  if (lines.every(l => isDecorativeLine(l))) return 'decorative';
-  if (isTableBlock(lines)) return 'table';
-  if (isStatBlock(lines)) return 'statblock';
-  if (isAsciiArtBlock(lines)) return 'ascii';
+// --- Main ---
+
+function reformatBlock(lines) {
+  // Phase 1: Full-block checks for content that must stay whole
+  if (lines.every(l => isDecorativeLine(l))) return '';
+
+  // Phase 2: Check ASCII art — if mixed with stat/table lines, segment anyway
+  if (isAsciiArtBlock(lines)) {
+    const hasStat = lines.some(l => /^\w[\w\s]+\s*:\s*\w/.test(l.trim()));
+    const hasTablePipes = lines.some(l => {
+      const s = l.trim();
+      if (!s.includes('|')) return false;
+      return s.replace(/\|/g, '').replace(/[^a-zA-Z0-9]/g, '').length >= 3;
+    });
+    if (hasStat || hasTablePipes) {
+      return formatMixed(lines);
+    }
+    return formatAscii(lines);
+  }
+
+  // Phase 3: Pure-type formatting
+  if (isTableBlock(lines)) return formatTable(lines);
+  if (isStatBlock(lines)) return formatStatBlock(lines);
+  return formatProse(lines);
+}
+
+// --- Line-level classification ---
+
+function classifyLine(line) {
+  const s = line.trim();
+  if (!s) return 'blank';
+  if (isDecorativeLine(line)) return 'decorative';
+  if (s.includes('|')) return 'pipe';
+  if (/^\w[\w\s]+\s*:\s*\w/.test(s)) return 'stat';
   return 'prose';
+}
+
+function segmentLines(lines) {
+  const groups = [];
+  let current = null;
+  for (const line of lines) {
+    const type = classifyLine(line);
+    if (!current || type !== current.type) {
+      if (current) groups.push(current);
+      current = { type, lines: [line] };
+    } else {
+      current.lines.push(line);
+    }
+  }
+  if (current) groups.push(current);
+  return groups;
+}
+
+function formatMixed(lines) {
+  const groups = segmentLines(lines);
+  return groups.map(group => {
+    if (group.type === 'pipe') {
+      if (group.lines.length >= 2) {
+        if (hasConsistentPipes(group.lines)) {
+          return formatTable(group.lines);
+        }
+        if (isAsciiArtBlock(group.lines)) {
+          return formatAscii(group.lines);
+        }
+      }
+      return formatProse(group.lines);
+    }
+    switch (group.type) {
+      case 'stat':      return formatStatBlock(group.lines);
+      case 'decorative': return '';
+      default:          return formatProse(group.lines);
+    }
+  }).filter(s => s).join('\n\n');
+}
+
+function hasConsistentPipes(lines) {
+  const counts = lines.map(l => (l.match(/\|/g) || []).length).filter(c => c > 0);
+  if (counts.length < 2) return false;
+  const mode = counts.sort((a, b) => counts.filter(v => v === a).length - counts.filter(v => v === b).length).pop();
+  return counts.filter(c => c === mode).length / counts.length >= 0.6;
 }
 
 // --- Formatters ---
@@ -131,16 +205,10 @@ function reformat(content) {
   for (const block of blocks) {
     const lines = block.split('\n').filter(l => l.trim().length > 0);
     if (lines.length === 0) continue;
-    const type = classifyBlock(lines);
-    switch (type) {
-      case 'decorative': continue;
-      case 'ascii': result.push(formatAscii(lines)); break;
-      case 'table': result.push(formatTable(lines)); break;
-      case 'statblock': result.push(formatStatBlock(lines)); break;
-      default: result.push(formatProse(lines)); break;
-    }
+    const formatted = reformatBlock(lines);
+    if (formatted) result.push(formatted);
   }
-  return result.join('').trim();
+  return result.join('\n\n').trim();
 }
 
-module.exports = { reformat, classifyBlock, formatTable, formatAscii, formatProse, formatStatBlock };
+module.exports = { reformat, formatMixed, formatTable, formatAscii, formatProse, formatStatBlock };
