@@ -4,13 +4,15 @@ Convert GameFAQs walkthroughs into hyperlinked markdown — via Node.js script o
 [opencode](https://opencode.ai) agent skill.
 
 **[faqmd.dev](https://faqmd.dev)** hosts walkthroughs generated with this tool.
-The initial example is Phantasy Star IV with RetroAchievements annotations.
+Content is managed in a [private repo](https://github.com/danielcurran/faqmd-content);
+only the initial example walked through lives here.
 
 **Want your generated walkthrough on the site?** [Open a submission
 issue](https://github.com/danielcurran/faqmd/issues/new?title=Submission%3A+%5Bgame+name%5D&body=Link+to+the+converted+markdown%3A%0A%0AOriginal+GameFAQs+URL%3A%0A%0AAuthor+credit%3A)
 with a link to your converted markdown. Inclusion is at the admin's discretion.
 
-No walkthroughs are committed to this repo beyond the initial example.
+No walkthroughs are committed to this repo — content is deployed from a private
+repo via GitHub Actions.
 
 ---
 
@@ -86,16 +88,17 @@ about which section each achievement belongs to, and injects them directly.
 
 ```bash
 # 1. Convert
-node convert.js "https://gamefaqs.gamespot.com/.../faqs/12345?print=1"
+node scripts/convert.js "https://gamefaqs.gamespot.com/.../faqs/12345?print=1"
 
 # 2. Annotate (via opencode agent skill)
-# "Match RetroAchievements for game 50 to walkthrough.md"
+# "Match RetroAchievements for game <id> to walkthrough.md"
 
 # 3. Split
 node scripts/split-guide.js walkthrough.md guide/
 
-# 4. Deploy (faqmd.dev — guide/ is served by GitHub Pages)
-# git add -f guide/ && git commit -m "add walkthrough" && git push
+# 4. Publish (push to private content repo — auto-deploys to faqmd.dev)
+cp -r guide/ /path/to/faqmd-content/
+cd /path/to/faqmd-content && git add -A && git commit -m "add walkthrough" && git push
 ```
 
 ## Output features
@@ -135,3 +138,4 @@ The converter:
 | `scripts/split-guide.js` | Split large output into mobile-friendly section files |
 | `skills/SKILL.md` | opencode agent skill — convert walkthroughs |
 | `skills/retroachievements-skill.md` | opencode agent skill — AI-powered achievement matching |
+| `.github/workflows/deploy.yml` | Deploys content from private repo to faqmd.dev |
