@@ -74,6 +74,51 @@ function splitSections(text, tocEntries) {
 function escapeMd(t) { return t.replace(/[\[\]\(\)#*_`]/g, ''); }
 function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
 
+// Detect if a line is ASCII art (should be in code block) vs prose
+function isAsciiArt(line) {
+  const s = line.trim();
+  if (!s) return false;
+  // Lines with 3+ pipe chars (tables)
+  if ((s.match(/\|/g) || []).length >= 3) return true;
+  // Repeated decorative chars
+  if (/^[\*\-_=¯]{10,}$/.test(s)) return true;
+  // Lines where special chars outnumber letters
+  const letters = (s.match(/[a-zA-Z]/g) || []).length;
+  const special = (s.match(/[^a-zA-Z0-9\s]/g) || []).length;
+  if (special > 0 && special > letters * 1.5) return true;
+  // Box-drawing patterns
+  if ((s.match(/[\/\\\|\-]/g) || []).length >= 4 && letters < 5) return true;
+  return false;
+}
+
+// Format content: detect ASCII art blocks and prose blocks
+function formatContent(content) {
+  const lines = content.split('\n');
+  const blocks = [];
+  let currentBlock = [];
+  let currentIsCode = null;
+
+  for (const line of lines) {
+    const code = isAsciiArt(line);
+    if (currentIsCode !== null && code !== currentIsCode) {
+      blocks.push({ lines: currentBlock, isCode: currentIsCode });
+      currentBlock = [];
+    }
+    currentIsCode = code;
+    currentBlock.push(line);
+  }
+  if (currentBlock.length > 0) {
+    blocks.push({ lines: currentBlock, isCode: currentIsCode });
+  }
+
+  return blocks.map(b => {
+    const text = b.lines.join('\n').trim();
+    if (!text) return '';
+    if (b.isCode) return '```\n' + text + '\n```';
+    return text;
+  }).filter(Boolean).join('\n\n');
+}
+
 (async function () {
   let html;
   if (URL && !URL.startsWith('http')) {
@@ -106,7 +151,7 @@ function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
   for (const s of sections) {
     md += '<a id="' + anchorId(s) + '"></a>\n\n';
     md += '#'.repeat(s.level) + ' ' + s.num + '. ' + s.title + '\n\n';
-    md += '\n```\n' + s.content + '\n```\n\n';
+    md += formatContent(s.content) + '\n\n';
   }
 
   fs.writeFileSync(OUTPUT, md);
