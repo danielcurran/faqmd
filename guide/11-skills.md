@@ -2,6 +2,7 @@
 
 # 11. Skills
 
+```
 Skills are special abilities that characters and enemies may use. They are
 usually specific to a certain character or type of enemy, but some Skills
 may be usable by other entities for some reason or another. Skills are most
@@ -31,4 +32,4 @@ Skill name following the list of enemies.
 The final part gives a description of each Skill that can only be used by
 enemies, listed in alphabetical order, along with information on which
 enemies can use the Skill.
-----------------------------------------------
+```

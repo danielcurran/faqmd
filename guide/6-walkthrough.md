@@ -20,7 +20,7 @@
  #  only read what you need to if you don't want the plot ruined.      #
  #                                                                     #
  #######################################################################
-```
+
 
 Select START from the Title Menu to begin a new game. The screen goes blank
 and an anonymous voice calls to Chaz, telling him to wake up. He does, and
@@ -34,7 +34,8 @@ to tour the academy. Alys doesn't share his interest, and they promptly
 set off to Piata, and off the screen. A short narration begins, over a
 background of Chaz and Alys standing on a precipice overlooking Piata.
 
-"AW 2284. Monster attacks
+
+ "AW 2284. Monster attacks
   have swelled the ranks of those
   who call themselves 'Hunters.'
   But as the attacks become ever
@@ -42,3 +43,4 @@ background of Chaz and Alys standing on a precipice overlooking Piata.
   elite few begin to wonder what
   is behind this outbreak... and
   when and how will it all end?"
+```

@@ -76,115 +76,21 @@ function splitSections(text, tocEntries) {
 function escapeMd(t) { return t.replace(/[\[\]\(\)#*_`]/g, ''); }
 function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
 
-// Detect line types for smarter formatting
-function isDecorative(line) {
-  return /^[\*\-_=¯]{10,}$/.test(line.trim());
-}
-
-function isPipeTable(lines) {
-  let pipeCounts = [];
-  for (const line of lines) {
-    const s = line.trim();
-    if (!s) continue;
-    const pipes = (s.match(/\|/g) || []).length;
-    // Table rows need 3+ pipes and actual data between them
-    if (pipes >= 3) {
-      const cells = s.split('|').map(c => c.trim());
-      const meaningful = cells.filter(c => c && c.length > 1 && !/^[¯\-_=*]+$/.test(c));
-      if (meaningful.length >= 2) pipeCounts.push(pipes);
-    }
-  }
-  // Need at least 2 data rows with consistent pipe count
-  if (pipeCounts.length < 2) return false;
-  const mostCommon = pipeCounts.sort((a,b) => pipeCounts.filter(x => x===a).length - pipeCounts.filter(x => x===b).length).pop();
-  return pipeCounts.filter(x => x === mostCommon).length >= 2;
-}
-
-function isPartyBlock(lines) {
-  const text = lines.join(' ').toLowerCase();
-  return /starting (party|level|equipment)/i.test(text) ||
-         /recommended/i.test(text) ||
-         /you begin with/i.test(text) ||
-         /joins the party/i.test(text) ||
-         /^\s*[a-z]+ (joins|leaves)/im.test(text) ||
-         /equipment\s{2,}[¯]/i.test(text);
-}
-
-function isAsciiArt(line) {
-  const s = line.trim();
-  if (!s) return false;
-  if ((s.match(/[\/\\\|\-]/g) || []).length >= 5 && (s.match(/[a-zA-Z]/g) || []).length < 5) return true;
-  const letters = (s.match(/[a-zA-Z]/g) || []).length;
-  const special = (s.match(/[^a-zA-Z0-9\s]/g) || []).length;
-  if (special > 0 && special > letters * 3) return true;
-  return false;
-}
-
-function asciiTableToMarkdown(lines) {
-  // Filter out decorative separator rows
-  const rows = lines.filter(l => l.trim() && !isDecorative(l));
-  if (rows.length < 2) return lines.join('\n');
-  
-  // Split each row on pipe, trim cells
-  const cells = rows.map(r => r.split('|').map(c => c.trim()).filter(c => c));
-  // Find max columns
-  const maxCols = Math.max(...cells.map(r => r.length));
-  
-  // Pad rows to max columns
-  const padded = cells.map(r => {
-    while (r.length < maxCols) r.push('');
-    return r;
-  });
-  
-  const header = padded[0];
-  const data = padded.slice(1);
-  
-  let out = '| ' + header.join(' | ') + ' |\n';
-  out += '| ' + header.map(() => '---').join(' | ') + ' |\n';
-  for (const row of data) {
-    out += '| ' + row.join(' | ') + ' |\n';
-  }
-  return out;
-}
-
-// Format content: detect table, art, party, and prose blocks
+// Format content for mobile-friendly reading while preserving structure.
+// Everything stays in code blocks for layout fidelity.
 function formatContent(content) {
   const lines = content.split('\n');
-  const blocks = [];
-  let currentBlock = [];
-  
-  function flush() {
-    if (currentBlock.length === 0) return;
-    const text = currentBlock.join('\n').trim();
-    if (!text) { currentBlock = []; return; }
-    
-    // Check block type
-    const nonDecorative = currentBlock.filter(l => !isDecorative(l.trim()));
-    
-    if (nonDecorative.length === 0) {
-      // All decorative — skip entirely
-    } else if (isPartyBlock(nonDecorative)) {
-      blocks.push('> ' + text.replace(/\n/g, '\n> '));
-    } else if (isPipeTable(nonDecorative)) {
-      blocks.push(asciiTableToMarkdown(currentBlock));
-    } else if (nonDecorative.some(l => isAsciiArt(l))) {
-      blocks.push('```\n' + text + '\n```');
-    } else {
-      blocks.push(text);
-    }
-    currentBlock = [];
-  }
-  
+  const cleaned = [];
   for (const line of lines) {
-    if (line.trim() === '') {
-      flush();
-    } else {
-      currentBlock.push(line);
-    }
+    // Strip purely decorative lines
+    if (/^[\*\-_=¯]{30,}$/.test(line.trim())) continue;
+    // Strip TOC reference leaks
+    if (/^\d+\.\d+(?:\.\d+)*\.?\s+[A-Z][\w\s'-]{3,50}\s{3,}C[A-Z]{4}\s*$/.test(line.trim())) continue;
+    cleaned.push(line);
   }
-  flush();
-  
-  return blocks.filter(Boolean).join('\n\n');
+  const text = cleaned.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  if (!text) return '';
+  return '```\n' + text + '\n```';
 }
 
 (async function () {

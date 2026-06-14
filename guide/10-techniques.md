@@ -2,6 +2,7 @@
 
 # 10. Techniques
 
+```
 Techniques are special powers that characters and monsters may possess.
 They work by emitting a form of psionic energy that can have a variety of
 different effects, based on the Technique being used. This energy drains
@@ -22,4 +23,4 @@ Level at which they learn the Techniques.
 The second part gives a description of each Technique, split into the three
 different types, along with TP costs and information on who or what can use
 the Techniques.
--------------------------------------
+```

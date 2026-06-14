@@ -286,16 +286,23 @@ a:hover { text-decoration: underline; color: #f5e88a; }
   #content ul, #content ol, #content blockquote, #content hr {
     max-width: none; margin-left: 0; margin-right: 0;
   }
-  #content pre, #content table {
-    font-size: 0.7rem;
+   #content pre, #content table {
+    font-size: 0.72rem;
     padding: 10px 12px;
     max-width: 100%;
     white-space: pre-wrap;
     word-break: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     tab-size: 2;
+    hyphens: none;
   }
-  #content pre code { font-size: 0.7rem; white-space: pre-wrap; word-break: normal; }
+  #content pre code {
+    font-size: 0.72rem;
+    white-space: pre-wrap;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+  }
   #content pre.keep-scroll {
     white-space: pre;
     overflow-x: auto;
