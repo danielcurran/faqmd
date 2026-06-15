@@ -292,4 +292,4 @@ function reformat(content) {
   return result.join('\n\n').trim();
 }
 
-module.exports = { reformat, formatMixed, formatTable, formatAscii, formatProse, formatStatBlock, formatDecorativeText, classifyArtBlock };
+module.exports = { reformat, reformatBlock, formatMixed, formatTable, formatAscii, formatProse, formatStatBlock, formatDecorativeText, classifyArtBlock };

@@ -4,7 +4,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const { reformat, formatProse, formatStatBlock, formatDecorativeText, classifyArtBlock } = require('./reformat');
+const { extractText, parseTOC, splitSections, escapeMd, anchorId } = require('../lib/convert-core');
+const { reformat, reformatBlock, formatProse, formatStatBlock, formatDecorativeText, classifyArtBlock } = require('./reformat');
 
 let passed = 0;
 let failed = 0;
@@ -20,34 +21,28 @@ function assert(label, fn) {
   }
 }
 
-// ── extractText (inline test) ──
-{
+// ── convert-core: extractText ──
+assert('extractText: captures pre content', () => {
   const html = '<html><body><pre id="faqspan-1">Section 1\n\nSection 2</pre></body></html>';
-  const re = /<pre[^>]*>(.*?)<\/pre>/gs;
-  let text = '';
-  let m;
-  while ((m = re.exec(html)) !== null) text += m[1] + '\n';
-  text = text.replace(/\r/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+  const text = extractText(html);
+  if (!text.includes('Section 1')) throw new Error('Missing Section 1');
+  if (!text.includes('Section 2')) throw new Error('Missing Section 2');
+});
 
-  assert('extractText: captures pre content', () => {
-    if (!text.includes('Section 1')) throw new Error('Missing Section 1');
-    if (!text.includes('Section 2')) throw new Error('Missing Section 2');
-  });
+assert('extractText: decodes HTML entities', () => {
+  const html = '<pre>A &amp; B &lt; C &gt; D &quot;E&quot; &#39;F&#39;</pre>';
+  const text = extractText(html);
+  if (text !== 'A & B < C > D "E" \'F\'\n') throw new Error('Entity decode failed: ' + JSON.stringify(text));
+});
 
-  const ents = 'A &amp; B &lt; C &gt; D &quot;E&quot; &#39;F&#39;';
-  const fixed = ents.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-  assert('extractText: decodes HTML entities', () => {
-    if (fixed !== 'A & B < C > D "E" \'F\'') throw new Error('Entity decode failed: ' + fixed);
-  });
+assert('extractText: strips carriage return', () => {
+  const html = '<pre>Line 1\r\nLine 2\r\n</pre>';
+  const text = extractText(html);
+  if (text.includes('\r')) throw new Error('\\r not stripped: ' + JSON.stringify(text));
+});
 
-  const crlf = 'Line 1\r\nLine 2\r\n';
-  assert('extractText: strips carriage return', () => {
-    if (crlf.replace(/\r/g, '').includes('\r')) throw new Error('\\r not stripped');
-  });
-}
-
-// ── parseTOC (inline test) ──
-{
+// ── convert-core: parseTOC ──
+assert('parseTOC: finds all sections', () => {
   const tocText = [
     'Table of Contents',
     ' 1. Introduction                             INRO',
@@ -58,59 +53,69 @@ function assert(label, fn) {
     '',
     'Some other content',
   ].join('\n');
+  const toc = parseTOC(tocText);
+  if (toc.length !== 5) throw new Error('Expected 5 entries, got ' + toc.length);
+});
 
-  const lines = tocText.split('\n');
-  const tocEntries = [];
-  let inTOC = false;
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (line.includes('Table of Contents')) { inTOC = true; continue; }
-    if (!inTOC) continue;
-    const tm = line.match(/^\s*(\d+(?:\.\d+)*)\.?\s+(.+?)\s{2,}([A-Z]{4})\s*$/);
-    if (tm) {
-      tocEntries.push({ num: tm[1], title: tm[2].trim(), code: tm[3] });
-    }
-  }
+assert('parseTOC: extracts 4-letter code', () => {
+  const toc = parseTOC('Table of Contents\n 1. Introduction                             INRO\n');
+  if (toc[0].code !== 'INRO') throw new Error('Expected INRO, got ' + toc[0].code);
+});
 
-  assert('parseTOC: finds all sections', () => {
-    if (tocEntries.length !== 5) throw new Error('Expected 5 entries, got ' + tocEntries.length);
-  });
-  assert('parseTOC: extracts 4-letter code', () => {
-    if (tocEntries[0].code !== 'INRO') throw new Error('Expected INRO, got ' + tocEntries[0].code);
-  });
-  assert('parseTOC: extracts level 3 section', () => {
-    const l3 = tocEntries.find(e => e.num === '6.1.1');
-    if (!l3) throw new Error('Expected 6.1.1 entry not found');
-    if (l3.code !== 'TWLR') throw new Error('Expected TWLR code, got ' + l3.code);
-  });
-  assert('parseTOC: all numbers extracted correctly', () => {
-    const nums = tocEntries.map(e => e.num);
-    const expected = ['1', '1.1', '6', '6.1', '6.1.1'];
-    if (JSON.stringify(nums) !== JSON.stringify(expected)) throw new Error('Expected ' + JSON.stringify(expected) + ', got ' + JSON.stringify(nums));
-  });
-}
+assert('parseTOC: extracts level 3 section', () => {
+  const toc = parseTOC('Table of Contents\n      6.1.1. The Town of Learning            TWLR\n');
+  const l3 = toc.find(e => e.num === '6.1.1');
+  if (!l3) throw new Error('Expected 6.1.1 entry not found');
+  if (l3.code !== 'TWLR') throw new Error('Expected TWLR code, got ' + l3.code);
+});
 
-// ── escapeMd (inline test) ──
-{
-  function escapeMd(t) { return t.replace(/[\[\]\(\)#*_`]/g, ''); }
-  assert('escapeMd: strips markdown special chars', () => {
-    const r = escapeMd('[Title](url) #section *bold* _italic_ `code`');
-    if (r !== 'Titleurl section bold italic code') throw new Error('Got: ' + r);
-  });
-}
+assert('parseTOC: is case-insensitive on header', () => {
+  const toc = parseTOC('table of contents\n 1. Introduction                             INRO\n');
+  if (toc.length !== 1) throw new Error('Expected 1 entry, got ' + toc.length);
+});
 
-// ── anchorId (inline test) ──
-{
-  function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
-  assert('anchorId: converts dots to hyphens', () => {
-    if (anchorId({ num: '6.4.8' }) !== 's6-4-8') throw new Error('Got: ' + anchorId({ num: '6.4.8' }));
-  });
-  assert('anchorId: handles single section', () => {
-    if (anchorId({ num: '2' }) !== 's2') throw new Error('Got: ' + anchorId({ num: '2' }));
-  });
-}
+// ── convert-core: escapeMd ──
+assert('escapeMd: strips markdown special chars', () => {
+  const r = escapeMd('[Title](url) #section *bold* _italic_ `code`');
+  if (r !== 'Titleurl section bold italic code') throw new Error('Got: ' + r);
+});
 
-// ── formatProse ──
+// ── convert-core: anchorId ──
+assert('anchorId: converts dots to hyphens', () => {
+  if (anchorId({ num: '6.4.8' }) !== 's6-4-8') throw new Error('Got: ' + anchorId({ num: '6.4.8' }));
+});
+assert('anchorId: handles single section', () => {
+  if (anchorId({ num: '2' }) !== 's2') throw new Error('Got: ' + anchorId({ num: '2' }));
+});
+
+// ── convert-core: splitSections ──
+assert('splitSections: splits content by section codes', () => {
+  const text = [
+    'Table of Contents',
+    ' 1. Intro                             AAAA',
+    ' 2. Walkthrough                       BBBB',
+    '',
+    '***************************************************************************',
+    '1. Intro                                                               CAAAA',
+    '***************************************************************************',
+    'Intro text here.',
+    '',
+    '',
+    '',
+    '',
+    '***************************************************************************',
+    '2. Walkthrough                                                         CBBBB',
+    '***************************************************************************',
+    'Walkthrough text here.',
+  ].join('\n');
+  const toc = parseTOC(text);
+  const sections = splitSections(text, toc);
+  if (sections.length !== 2) throw new Error('Expected 2 sections, got ' + sections.length);
+  if (!sections[0].content.includes('Intro text')) throw new Error('Missing intro content');
+  if (!sections[1].content.includes('Walkthrough text')) throw new Error('Missing walkthrough content');
+});
+
+// ── reformat: formatProse ──
 assert('formatProse: joins lines with space', () => {
   const r = formatProse(['first line', 'second line', 'third line']);
   if (r !== 'first line second line third line\n\n') throw new Error('Got: ' + JSON.stringify(r));
@@ -124,7 +129,7 @@ assert('formatProse: returns empty for blank input', () => {
   if (r !== '') throw new Error('Should be empty');
 });
 
-// ── formatStatBlock ──
+// ── reformat: formatStatBlock ──
 assert('formatStatBlock: formats key-value pairs', () => {
   const r = formatStatBlock(['HP: 300', 'EXP: 173', 'MST: 54']);
   if (!r.includes('**HP:** 300')) throw new Error('Missing HP');
@@ -132,7 +137,7 @@ assert('formatStatBlock: formats key-value pairs', () => {
   if (!r.includes(' · ')) throw new Error('Missing separator');
 });
 
-// ── formatDecorativeText ──
+// ── reformat: formatDecorativeText ──
 assert('formatDecorativeText: strips // prefix', () => {
   const r = formatDecorativeText(['// DUNGEON #2']);
   if (!r.includes('**DUNGEON #2**')) throw new Error('Got: ' + r);
@@ -147,7 +152,7 @@ assert('formatDecorativeText: does NOT mark stat lines as decorative', () => {
   if (r !== null) throw new Error('Stat line with multi-spaces should not be decorative, got: ' + r);
 });
 
-// ── classifyArtBlock ──
+// ── reformat: classifyArtBlock ──
 assert('classifyArtBlock: detects boss cards', () => {
   const r = classifyArtBlock(['BOSS #1', 'HP: 300', 'Recommended Level: 12+']);
   if (r !== 'boss') throw new Error('Expected boss, got: ' + r);
@@ -155,6 +160,16 @@ assert('classifyArtBlock: detects boss cards', () => {
 assert('classifyArtBlock: detects stat blocks', () => {
   const r = classifyArtBlock(['LV: 99    HP: 999/999    TP: 999/999']);
   if (r !== 'statblock') throw new Error('Expected statblock, got: ' + r);
+});
+
+// ── reformat: reformatBlock ──
+assert('reformatBlock: classifies prose block', () => {
+  const r = reformatBlock(['first sentence here', 'second sentence continues']);
+  if (!r.includes('first sentence here second sentence continues')) throw new Error('Got: ' + r);
+});
+assert('reformatBlock: classifies stat block', () => {
+  const r = reformatBlock(['HP: 300', 'EXP: 173']);
+  if (!r.includes('**HP:** 300')) throw new Error('Got: ' + r);
 });
 
 // ── reformat: end-to-end paragraph ──
