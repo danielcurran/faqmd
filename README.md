@@ -99,7 +99,17 @@ Usage in opencode:
 ```
 
 The agent fetches achievements from the API, reads the walkthrough, reasons
-about which section each achievement belongs to, and injects them directly.
+about which section each achievement belongs to, and produces an
+`achievements.json` data file. Running `split-guide.js` then generates
+`achievements.md` (a checklist with missable table + by-section view) and
+prepends a `0.1 Achievement Checklist` entry to `toc.json`.
+
+**Achievement data flow:**
+- RetroAchievements API → `achievements.json` (committed alongside sections)
+- `split-guide.js` reads `achievements.json` → `achievements.md` + updated `toc.json`
+- The gamemds reader app loads `achievements.json` at runtime to render inline badges, missable warnings, and localStorage-backed progress tracking
+
+See `AGENTS.md` for the full `achievements.json` schema.
 
 ### reformat-review — Polish the reformatter output
 
@@ -150,12 +160,13 @@ node scripts/convert.js "https://gamefaqs.gamespot.com/.../faqs/12345?print=1"
 
 # 2. Annotate (via opencode agent skill)
 # "Match RetroAchievements for game <id> to walkthrough.md"
+# Produces guide/achievements.json
 
 # 3. Review and polish (optional, via opencode agent skills)
 # "Run reformat-review on walkthrough.md"   — fix tables, stat blocks, bullet lists
 # "Run art-modernize on walkthrough.md"    — upgrade ASCII art to HTML components
 
-# 4. Split
+# 4. Split (also generates achievements.md + updates toc.json if achievements.json exists)
 node scripts/split-guide.js walkthrough.md guide/
 
 # 5. Validate
@@ -163,6 +174,7 @@ npm test
 
 # 6. Publish — copy to gamemds repo (auto-deploys to gamemds.org)
 #    Add the new game to gamemds/guides.json if it is not already listed.
+#    Set "hasAchievements": true in guides.json if achievements.json exists.
 cp -r guide/ /path/to/gamemds/guides/<game-slug>/
 cd /path/to/gamemds
 npm test
@@ -185,7 +197,7 @@ git add -A && git commit -m "add walkthrough" && git push
 - **ASCII art** (maps, dungeon layouts) preserved in code blocks with `<!-- MODERNIZE:TYPE -->` tags for the art-modernize agent skill
 - **Paragraph breaks** at walkthrough instruction steps (Go, Turn, Take, Enter)
 - **Decorative headers** (`// DUNGEON #2`) stripped to clean bold text
-- **RetroAchievements** callouts with medal emojis at matched sections
+- **RetroAchievements** — `achievements.json` data file with section mapping, missable cutoff tracking, and strategic notes. `split-guide.js` generates a standalone checklist (`achievements.md`) with missable table + by-section checkboxes. The gamemds reader app renders inline badges, missable warnings, and localStorage progress tracking.
 - Content-aware formatting — classifies each block and reformats accordingly
 
 ## How It Works
@@ -221,7 +233,7 @@ The converter:
 | `lib/reformat/format.js` | Per-block formatting, plain-text extraction (boss/shop/character/portrait), and `<!-- MODERNIZE:TYPE -->` tagging |
 | `lib/reformat/classify.js` | Content classification helpers |
 | `scripts/reformat.js` | Backward-compatible wrapper around `lib/reformat` |
-| `scripts/split-guide.js` | Split large output into mobile-friendly section files |
+| `scripts/split-guide.js` | Split large output into mobile-friendly section files; generates achievements.md from achievements.json |
 | `scripts/test.js` | Standalone test runner (run via `npm test`) |
 | `scripts/raw.txt` | Cached GameFAQs walkthrough for offline testing |
 | `package.json` | Defines `npm test`, `npm run convert`, and the Node engine requirement |
