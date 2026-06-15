@@ -45,11 +45,16 @@ for (let a = 0; a < anchorLines.length; a++) {
   rawSections.push({ anchor: anchorLines[a].anchor, body });
 }
 
-// Detect stub sections: heading + code-block TOC reference only, no real content
-// Stub sections are typically < 500 chars (heading + decorative TOC code block)
-// Real sections have 1000+ chars of walkthrough content
+// Detect stub sections: heading + anchor tags only, no real prose content
+// Short sections with substantive text (100+ chars beyond headings) are not stubs
 function isStub(section) {
-  return section.body.length < 500;
+  if (section.body.length >= 500) return false;
+  const stripped = section.body
+    .replace(/<a id="[^"]*"><\/a>/g, '')
+    .replace(/^#+\s+.*$/gm, '')
+    .replace(/^\s*$/gm, '')
+    .trim();
+  return stripped.length < 100;
 }
 
 // Merge stub sections into their next non-stub sibling

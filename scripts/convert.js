@@ -58,7 +58,7 @@ function parseTOC(text) {
   let inTOC = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (line.includes('Table of Contents')) { inTOC = true; continue; }
+    if (line.toLowerCase().includes('table of contents')) { inTOC = true; continue; }
     if (!inTOC) continue;
     const m = line.match(/^\s*(\d+(?:\.\d+)*)\.?\s+(.+?)\s{2,}([A-Z]{4})\s*$/);
     if (m) {
@@ -107,7 +107,7 @@ function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
 
 
 
-(async function () {
+async function main() {
   let html;
   if (URL && !URL.startsWith('http')) {
     html = fs.readFileSync(URL, 'utf8');
@@ -124,10 +124,18 @@ function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
   console.log('Extracted ' + text.length + ' chars');
 
   const toc = parseTOC(text);
-  console.log('Found ' + toc.length + ' sections');
+  const tocWarning = toc.length === 0 ? ' (WARNING: no TOC entries parsed)' : '';
+  console.log('Found ' + toc.length + ' sections' + tocWarning);
 
   const sections = splitSections(text, toc);
-  console.log('Split into ' + sections.length + ' sections');
+  const matchPct = toc.length > 0 ? Math.round(sections.length / toc.length * 100) : 0;
+  console.log('Split into ' + sections.length + ' sections (' + matchPct + '% of TOC matched)');
+  if (toc.length > 0 && matchPct < 80) {
+    console.log('WARNING: fewer than 80% of TOC entries matched body sections');
+  }
+  if (sections.length === 0) {
+    console.log('WARNING: no sections extracted — check GameFAQs page format');
+  }
 
   let md = '# ' + (titleOverride || sections[0]?.title || 'Walkthrough') + '\n\n';
   if (authorOverride) {
@@ -154,4 +162,9 @@ function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
   }
   fs.writeFileSync(OUTPUT, md);
   console.log('Saved to ' + OUTPUT + ' (' + md.length + ' bytes)');
-})();
+}
+
+main().catch(err => {
+  console.error('Fatal:', err.message);
+  process.exit(1);
+});
