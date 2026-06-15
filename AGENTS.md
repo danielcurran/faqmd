@@ -20,7 +20,8 @@ This repo contains the **converter tool** and **opencode agent skills** only. Wa
 ## Conventions
 - Output saved as `walkthrough.md` or `guide-<faq-id>.md`
 - Large guides (>500KB) should be split with `split-guide.js` for mobile readability
-- Split output goes in `guide/`: `index.md` + one file per section named `<section-num>-<slug>.md`
+- Split output goes in `guide/`: `index.md` + `toc.json` + `meta.json` + one file per section named `<section-num>-<slug>.md`
+- `meta.json` contains `title`, `subtitle`, `author`, `source`, and `attributionHtml` for the gamemds reader app
 - Anchor IDs: replace dots with hyphens, prefix with `s` (e.g., `s6-4-8`)
 - ASCII art wrapped in code blocks
 - Equipment tables stay in code blocks, not treated as markdown tables

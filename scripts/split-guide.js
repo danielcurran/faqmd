@@ -40,6 +40,22 @@ function main() {
 
   const header = lines.slice(0, headerEnd).join('\n');
 
+  // Extract walkthrough metadata from the header block
+  function extractMeta(src) {
+    const titleMatch = src.match(/^#\s+(.+)$/m);
+    const authorMatch = src.match(/^>\s+By\s+(.+?)\s+—/m);
+    const title = titleMatch ? titleMatch[1].trim() : 'Walkthrough';
+    const author = authorMatch ? authorMatch[1].trim() : 'Unknown Author';
+    return {
+      title,
+      subtitle: 'Guide and Walkthrough',
+      author,
+      source: 'GameFAQs',
+      attributionHtml: 'Walkthrough by ' + author + ' — Converted with <a href="https://github.com/danielcurran/faqmd" target="_blank" rel="noopener">faqmd</a>'
+    };
+  }
+  const meta = extractMeta(header);
+
   // Find all section boundaries by scanning anchor tags
   const anchorLines = [];
   for (let i = headerEnd; i < lines.length; i++) {
@@ -269,6 +285,10 @@ function main() {
   }
   const tocJson = path.join(outputDir, 'toc.json');
   fs.writeFileSync(tocJson, JSON.stringify(tocTree, null, 2));
+
+  // Write metadata for the reader app
+  const metaJson = path.join(outputDir, 'meta.json');
+  fs.writeFileSync(metaJson, JSON.stringify(meta, null, 2));
 
   // Write search index
   const indexJson = path.join(outputDir, 'search-index.json');
