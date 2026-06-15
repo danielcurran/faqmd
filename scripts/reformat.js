@@ -35,7 +35,7 @@ function isStatBlock(lines) {
   if (nonEmpty.length < 2) return false;
   const kvRe = /^\s*\w[\w\s]+\s*:\s*\w/;
   const kvLines = nonEmpty.filter(l => kvRe.test(l.trim()));
-  return kvLines.length / nonEmpty.length >= 0.4;
+  return kvLines.length / nonEmpty.length >= 0.3;
 }
 
 // --- Main ---
@@ -53,7 +53,7 @@ function reformatBlock(lines) {
       return s.replace(/\|/g, '').replace(/[^a-zA-Z0-9]/g, '').length >= 3;
     });
     if (hasStat || hasTablePipes) {
-      return formatMixed(lines);
+      return '<!-- MIXED -->\n\n' + formatMixed(lines);
     }
     return formatAscii(lines);
   }
