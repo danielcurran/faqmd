@@ -96,19 +96,27 @@ tool on the `.md` file). You're looking for evidence that the achievement's
 trigger condition (location, character, item, boss name) appears IN THAT
 SECTION.
 
-**Research online for ambiguous achievements.** When the walkthrough content
-alone doesn't give a clear answer, use these sources (in order of reliability):
+**If the match is ambiguous or uncertain**, do NOT guess a section. Instead,
+fetch the achievement's comments to get the exact location from players:
 
-- **RA Comments API for player tips** (MOST RELIABLE for ambiguous achievements):
-  ```bash
-  curl -s "https://retroachievements.org/API/API_GetComments.php?z=$RA_USER&y=$RA_KEY&i=<achievement-id>&t=2&c=50"
-  ```
-  Returns comments from the achievement's wall page. Filter out `"User": "Server"`
-  auto-generated messages and focus on player comments which often contain exact
-  strategies, locations, and tips. Save the most useful comment(s) in the
-  `communityTips` field so they're available for future reference without
-  re-fetching. This is the single best source for resolving ambiguous section
-  placements — player comments often state the exact location or trigger.
+```bash
+curl -s "https://retroachievements.org/API/API_GetComments.php?z=$RA_USER&y=$RA_KEY&i=<achievement-id>&t=2&c=50"
+```
+
+Filter out `"User": "Server"` auto-generated messages. Player comments often
+contain the EXACT location, trigger, or strategy — far more precise than the
+achievement description alone. Use these comments to:
+
+1. **Extract location hints** — town names (Krup, Termi, Aiedo), dungeon floors
+   ("7th floor of The Edge"), boss areas, or trigger conditions
+2. **Search the walkthrough** for those location hints (use grep/search tools)
+3. **Read the matching section** to find the exact anchor point
+4. **Match to the section number** where the trigger location appears
+
+Save the useful comment(s) in the `communityTips` field so the information
+persists in achievements.json.
+
+**Additional research sources** (when comments return no useful player input):
 
 - **RA API for achievement details**:
   ```bash
@@ -117,10 +125,9 @@ alone doesn't give a clear answer, use these sources (in order of reliability):
   Returns the full achievement object including the description with missable
   cutoff info. Useful for confirming cutoff points.
 
-- **Web search**: Search `"<achievement name>" retroachievements phantasy star iv`
+- **Web search**: Search `"<achievement name>" retroachievements <game name>`
   to find player discussions, Reddit threads, and guide articles with
-  strategies and tips. Use when the Comments API returns no useful player
-  comments.
+  strategies and tips.
 
 - **RA Game page**: `https://retroachievements.org/game/<game-id>` — lists all
   achievements for the game with descriptions. Note: the RA website blocks
@@ -130,8 +137,8 @@ alone doesn't give a clear answer, use these sources (in order of reliability):
 
 | Level | Criteria |
 |---|---|
-| High | The achievement's trigger (boss name, item, event) appears verbatim in the section content |
-| Medium | The section's place in game progression strongly implies it, but the trigger isn't explicitly mentioned |
+| High | The achievement's trigger (boss name, item, event) appears verbatim in the section content **OR** a player comment explicitly names the location/town/floor |
+| Medium | The section's place in game progression strongly implies it, but the trigger isn't explicitly mentioned and no comments are available |
 | Low | Best guess based on general game knowledge — mark these as "uncertain" |
 
 If confidence is Low for any section, list it separately so the user can verify.
@@ -157,13 +164,14 @@ If confidence is Low for any section, list it separately so the user can verify.
    clarify WHEN it becomes unobtainable. Do NOT just match to the first section
    that mentions the related content. Follow this process for EACH missable:
 
-   **a) Check the RA Comments API for player tips FIRST:**
+   **a) Fetch player comments to determine if it's actually missable and where:**
    ```bash
    curl -s "https://retroachievements.org/API/API_GetComments.php?z=$RA_USER&y=$RA_KEY&i=<achievement-id>&t=2&c=50"
    ```
    Player comments often reveal crucial info: whether an achievement is truly
-   missable (vs. just hard to find), the exact cutoff point, or alternative
-   locations where it can still be earned. Filter out `"User": "Server"` entries.
+   missable or available elsewhere, the exact cutoff point, and the trigger
+   location. Filter out `"User": "Server"` entries. Use location hints from
+   comments to search the walkthrough and pin down the exact section.
 
    **b) Query the RA API for the exact cutoff:**
    ```bash
@@ -307,9 +315,11 @@ git add -f guide/ && git commit -m "feat: add RetroAchievements annotations" && 
 - If the walkthrough has a separate "Boss Strategies" section, check it to
   verify which bosses appear where in the story.
 - **Use the RA Comments API for any achievement with medium/low confidence.**
-  Player comments are often definitive — they state the exact floor, town, or
-  trigger condition. Save the best comment as `communityTips` so it persists
-  in achievements.json.
-- **communityTips is optional.** Only include it when a player comment
-  provides useful information beyond what's in the achievement description.
-  Server/auto-generated comments should never be included.
+  Player comments often state the exact floor, town, or trigger condition.
+  Then search the walkthrough for that location to find the correct section.
+  Example: "Welcome To The Phantasy Zone" described as "Opa! Opa!" was
+  originally placed in section 18 (Sound Test), but a player comment
+  revealed "you must see the dancers dance in Aiedo" — searching the
+  walkthrough for "dance" found it in section 6.2.1 (Hunters Guild theatre).
+- **Save the best comment as `communityTips`** so it persists in
+  achievements.json for future reference without re-fetching the API.
