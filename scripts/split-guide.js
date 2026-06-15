@@ -125,6 +125,7 @@ for (const s of sections) {
 
 // Build full TOC from rawSections (including stubs for proper tree hierarchy)
 const tocEntries = [];
+const sectionMap = new Map(sections.map(s => [s.num, s]));
 for (const rs of rawSections) {
   const num = getNumber(rs.anchor);
   const title = getHeading(rs.body);
@@ -132,7 +133,7 @@ for (const rs of rawSections) {
   const depth = (num.match(/\./g) || []).length;
   // Get the real section's filename (redirect stubs)
   let filename = null;
-  const real = sections.find(s => s.num === num);
+  const real = sectionMap.get(num);
   if (real) {
     filename = real.filename;
   } else if (stubTargets[rs.anchor]) {
@@ -165,6 +166,16 @@ const uniqueTerms = Object.keys(searchIndex).length;
 console.log(`Search index: ${uniqueTerms} unique terms`);
 
 // Create output directory
+const resolved = path.resolve(outputDir);
+const cwd = process.cwd();
+if (resolved === '/' || resolved === cwd || resolved === path.resolve(cwd, '/')) {
+  console.error('Error: output directory must not be the root or working directory');
+  process.exit(1);
+}
+if (path.dirname(resolved) !== resolved && !fs.existsSync(path.dirname(resolved))) {
+  console.error('Error: parent directory does not exist: ' + path.dirname(resolved));
+  process.exit(1);
+}
 fs.rmSync(outputDir, { recursive: true, force: true });
 fs.mkdirSync(outputDir, { recursive: true });
 

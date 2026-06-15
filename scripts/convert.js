@@ -4,8 +4,25 @@ const fs = require('fs');
 const path = require('path');
 const { reformat } = require('./reformat');
 
-const URL = process.argv[2];
-const OUTPUT = process.argv[3] || path.join(__dirname, 'walkthrough.md');
+let URL = null;
+let OUTPUT = path.join(__dirname, 'walkthrough.md');
+
+// Parse named flags: --title="Game Name", --author="Author Name"
+let titleOverride = null;
+let authorOverride = null;
+const positional = [];
+for (let i = 2; i < process.argv.length; i++) {
+  const arg = process.argv[i];
+  if (arg.startsWith('--title=')) {
+    titleOverride = arg.slice('--title='.length);
+  } else if (arg.startsWith('--author=')) {
+    authorOverride = arg.slice('--author='.length);
+  } else {
+    positional.push(arg);
+  }
+}
+if (positional.length > 0) URL = positional[0];
+if (positional.length > 1) OUTPUT = positional[1];
 
 function fetch(url) {
   return new Promise((resolve, reject) => {
@@ -112,8 +129,12 @@ function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
   const sections = splitSections(text, toc);
   console.log('Split into ' + sections.length + ' sections');
 
-  let md = '# ' + (sections[0]?.title || 'Walkthrough') + '\n\n';
-  md += '> By Seb Holt (Sir Pobalot) — Converted from GameFAQs\n\n';
+  let md = '# ' + (titleOverride || sections[0]?.title || 'Walkthrough') + '\n\n';
+  if (authorOverride) {
+    md += '> By ' + authorOverride + ' — Converted from GameFAQs\n\n';
+  } else {
+    md += '> By Seb Holt (Sir Pobalot) — Converted from GameFAQs\n\n';
+  }
   md += '## Table of Contents\n\n';
   for (const s of sections) {
     md += '  '.repeat(s.level - 1) + '- [' + s.num + '. ' + escapeMd(s.title) + '](#' + anchorId(s) + ')\n';
@@ -125,6 +146,12 @@ function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
     md += reformat(s.content) + '\n\n';
   }
 
+  const resolved = path.resolve(OUTPUT);
+  const safeBase = path.resolve(process.cwd());
+  if (!resolved.startsWith(safeBase + path.sep) && resolved !== safeBase && !resolved.startsWith(path.resolve(__dirname) + path.sep)) {
+    console.error('Error: output path must be within the current working directory or script directory');
+    process.exit(1);
+  }
   fs.writeFileSync(OUTPUT, md);
   console.log('Saved to ' + OUTPUT + ' (' + md.length + ' bytes)');
 })();
