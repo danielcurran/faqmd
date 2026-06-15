@@ -172,6 +172,39 @@ assert('reformatBlock: classifies stat block', () => {
   if (!r.includes('**HP:** 300')) throw new Error('Got: ' + r);
 });
 
+assert('extractText: concatenates multiple pre tags', () => {
+  const html = '<pre>Part one</pre><div>ignore</div><pre>Part two</pre>';
+  const text = extractText(html);
+  if (!text.includes('Part one')) throw new Error('Missing part one');
+  if (!text.includes('Part two')) throw new Error('Missing part two');
+  if (text.includes('ignore')) throw new Error('Should not include non-pre content');
+});
+
+assert('escapeMd: handles empty string', () => {
+  if (escapeMd('') !== '') throw new Error('Should return empty string');
+});
+
+assert('anchorId: handles deeply nested section', () => {
+  if (anchorId({ num: '6.4.8.2' }) !== 's6-4-8-2') throw new Error('Got: ' + anchorId({ num: '6.4.8.2' }));
+});
+
+assert('splitSections: tolerates missing body code', () => {
+  const text = [
+    'Table of Contents',
+    ' 1. Intro                             AAAA',
+    ' 2. Missing                           MISS',
+    '',
+    '***************************************************************************',
+    '1. Intro                                                               CAAAA',
+    '***************************************************************************',
+    'Intro text here.',
+  ].join('\n');
+  const toc = parseTOC(text);
+  const sections = splitSections(text, toc);
+  if (sections.length !== 1) throw new Error('Expected 1 section, got ' + sections.length);
+  if (!sections[0].content.includes('Intro text')) throw new Error('Missing intro content');
+});
+
 // ── reformat: end-to-end paragraph ──
 assert('reformat: continuous prose paragraph', () => {
   const input = 'first sentence here\nsecond sentence continues\nthird sentence ends.';

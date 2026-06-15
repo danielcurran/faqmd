@@ -1,0 +1,23 @@
+{
+  "name": "faqmd",
+  "version": "1.0.0",
+  "description": "GameFAQs walkthrough to Markdown converter",
+  "main": "scripts/convert.js",
+  "bin": {
+    "faqmd": "scripts/convert.js"
+  },
+  "scripts": {
+    "test": "node scripts/test.js",
+    "convert": "node scripts/convert.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "gamefaqs",
+    "walkthrough",
+    "markdown",
+    "converter"
+  ],
+  "private": true
+}
