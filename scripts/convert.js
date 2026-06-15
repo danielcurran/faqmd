@@ -9,11 +9,20 @@ const OUTPUT = process.argv[3] || path.join(__dirname, 'walkthrough.md');
 
 function fetch(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, res => {
-      let data = '';
-      res.on('data', c => data += c);
-      res.on('end', () => resolve(data));
+    const req = https.get(url, res => {
+      if (res.statusCode !== 200) {
+        reject(new Error('HTTP ' + res.statusCode + ' (expected 200)'));
+        return;
+      }
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => resolve(Buffer.concat(chunks).toString()));
       res.on('error', reject);
+    });
+    req.on('error', reject);
+    req.setTimeout(30000, () => {
+      req.destroy();
+      reject(new Error('Request timed out after 30s'));
     });
   });
 }
@@ -32,7 +41,7 @@ function parseTOC(text) {
   let inTOC = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (line === 'Table of Contents') { inTOC = true; continue; }
+    if (line.includes('Table of Contents')) { inTOC = true; continue; }
     if (!inTOC) continue;
     const m = line.match(/^\s*(\d+(?:\.\d+)*)\.?\s+(.+?)\s{2,}([A-Z]{4})\s*$/);
     if (m) {
@@ -64,8 +73,10 @@ function splitSections(text, tocEntries) {
   const sections = [];
   for (let i = 0; i < positions.length; i++) {
     const start = positions[i].pos;
-    const end = i < positions.length - 1 ? positions[i + 1].pos - 30 : text.length;
+    const end = i < positions.length - 1 ? positions[i + 1].pos : text.length;
     let content = text.substring(start, end);
+    // Trim trailing section header bleed: decoration line + title + decoration line
+    content = content.replace(/\n[\*\-_¯]{10,}(?:\r?\n)+[^\n]*?C[A-Z]{4}\s*\n[\*\-_¯]{10,}(?:\r?\n)*\s*$/, '\n');
     content = content.replace(/^[_\*¯\s]{30,}$/gm, '');
     content = content.replace(/\n\d+\.\d+(?:\.\d+)*\.?\s+[A-Z][\w\s'-]{3,50}\s{3,}C[A-Z]{4}\s*$/gm, '');
     content = content.replace(/\n{3,}/g, '\n\n').trim();
@@ -110,7 +121,7 @@ function anchorId(e) { return 's' + e.num.replace(/\./g, '-'); }
   md += '\n---\n\n';
   for (const s of sections) {
     md += '<a id="' + anchorId(s) + '"></a>\n\n';
-    md += '#'.repeat(s.level) + ' ' + s.num + '. ' + s.title + '\n\n';
+    md += '#'.repeat(s.level) + ' ' + s.num + '. ' + escapeMd(s.title) + '\n\n';
     md += reformat(s.content) + '\n\n';
   }
 
