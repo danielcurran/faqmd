@@ -5,7 +5,9 @@ const fs = require('fs');
 const path = require('path');
 
 const { extractText, parseTOC, splitSections, escapeMd, anchorId } = require('../lib/convert-core');
-const { reformat, reformatBlock, formatProse, formatStatBlock, formatDecorativeText, classifyArtBlock } = require('./reformat');
+const { reformat, reformatBlock, formatProse, formatStatBlock, formatDecorativeText, classifyArtBlock, formatEquipmentTable } = require('./reformat');
+const { stripFrameChars, isPureBorderRow } = require('../lib/reformat/format');
+const { hasEquipSlotLines } = require('../lib/reformat/detect');
 
 let passed = 0;
 let failed = 0;
@@ -217,6 +219,96 @@ assert('reformat: splits stat block from prose', () => {
   const r = reformat(input);
   if (!r.includes('**HP:** 300')) throw new Error('Missing stat formatting');
   if (!r.includes('prose paragraph')) throw new Error('Missing prose content');
+});
+
+// ── Phase 1: equipment detection ──
+assert('hasEquipSlotLines: detects equipment slots', () => {
+  if (!hasEquipSlotLines(['|Head |LTHR-HELM |', '|Right|HUNT-KNIFE|'])) throw new Error('Should detect equipment slots');
+  if (hasEquipSlotLines(['| Location | Inn |'])) throw new Error('Should NOT detect as equipment');
+  if (hasEquipSlotLines(['Some prose here', 'More prose'])) throw new Error('Should NOT detect equipment');
+});
+
+// ── Phase 1: formatEquipmentTable ──
+assert('formatEquipmentTable: single character as list', () => {
+  const lines = [
+    'Starting          |   Chaz   |',
+    'Equipment   |¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|',
+    '            |Head |LTHR-HELM |',
+    '            |Right|HUNT-KNIFE|',
+    '            |Left |HUNT-KNIFE|',
+    '            |Body |LTHR-CLOTH|',
+  ];
+  const r = formatEquipmentTable(lines);
+  if (!r.includes('**Head:**')) throw new Error('Expected bullet list for single char equipment');
+  if (!r.includes('LTHR-HELM')) throw new Error('Expected LTHR-HELM in output');
+  if (!r.includes('**Equipment**')) throw new Error('Expected equipment header');
+});
+
+assert('formatEquipmentTable: multi-character as table', () => {
+  const lines = [
+    'Recommended       |   Alys   |   Chaz   |',
+    'Equipment   |¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|',
+    '            |Head |LTHR-CROWN|LTHR-HELM |',
+    '            |Right|BOOMERANG |HUNT-KNIFE|',
+    '            |Left |          |HUNT-KNIFE|',
+    '            |Body |LTHR-CLOTH|LTHR-CLOTH|',
+  ];
+  const r = formatEquipmentTable(lines);
+  if (!r.includes('| Slot |')) throw new Error('Expected table header in multi-char equipment');
+  if (!r.includes('Alys')) throw new Error('Expected Alys in table');
+  if (!r.includes('Chaz')) throw new Error('Expected Chaz in table');
+});
+
+// ── Phase 1: stripFrameChars ──
+assert('stripFrameChars: removes trailing frame chars', () => {
+  if (stripFrameChars('Test') !== 'Test') throw new Error('Should not strip normal text');
+  if (stripFrameChars('MONOMATE       20 MST /') !== 'MONOMATE       20 MST') throw new Error('Should strip trailing /');
+  if (stripFrameChars('Item    \\') !== 'Item') throw new Error('Should strip trailing \\');
+});
+
+// ── Phase 1: isPureBorderRow ──
+assert('isPureBorderRow: detects decorative rows', () => {
+  if (!isPureBorderRow('|---------------|')) throw new Error('Should detect dash border');
+  if (!isPureBorderRow('|¯¯¯¯¯|¯¯¯¯¯|')) throw new Error('Should detect overline border');
+  if (!isPureBorderRow('|===|===|')) throw new Error('Should detect equals border');
+  if (isPureBorderRow('|Head |LTHR-HELM |')) throw new Error('Should NOT detect equipment as border');
+});
+
+// ── Phase 1: formatDecorativeText skips equipment ──
+assert('formatDecorativeText: bails on equipment data', () => {
+  const lines = [
+    'Equipment   |¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯|',
+    '|Head |LTHR-HELM |',
+  ];
+  const r = formatDecorativeText(lines);
+  if (r !== null) throw new Error('Should return null for equipment blocks, got: ' + r);
+});
+
+assert('formatDecorativeText: works on real decorative text', () => {
+  const r = formatDecorativeText(['// DUNGEON #2 ¯¯\\']);
+  if (r === null) throw new Error('Should NOT return null for real decorative text');
+  if (!r.includes('**DUNGEON #2**')) throw new Error('Expected dungeon label, got: ' + r);
+});
+
+// ── Phase 1: reformatBlock equipment routing ──
+assert('reformatBlock: routes equipment to equipment formatter', () => {
+  const lines = [
+    'Starting          |   Chaz   |',
+    '|Head |LTHR-HELM |',
+    '|Body |LTHR-CLOTH|',
+  ];
+  const r = reformatBlock(lines);
+  // Must NOT be broken pipe fragments — either a table or a list
+  if (!r.includes('LTHR-HELM')) throw new Error('Missing equipment data in output');
+  if (r.includes('Starting          |')) throw new Error('Should not have raw pipe text in output');
+});
+
+// ── Phase 1: postProcess whitespace ──
+assert('reformat: collapses excessive blank lines', () => {
+  const input = 'Paragraph one.\n\n\n\nParagraph two.\n\n\nParagraph three.';
+  const r = reformat(input);
+  const blankSeq = (r.match(/\n\n+/g) || []).map(m => m.length);
+  if (blankSeq.some(n => n > 2)) throw new Error('Should not have 3+ consecutive newlines');
 });
 
 // ── End-to-end: verify generated walkthrough.md ──
