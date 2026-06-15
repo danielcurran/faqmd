@@ -99,16 +99,28 @@ SECTION.
 **Research online for ambiguous achievements.** When the walkthrough content
 alone doesn't give a clear answer, use these sources (in order of reliability):
 
-- **RA API for achievement details**: 
+- **RA Comments API for player tips** (MOST RELIABLE for ambiguous achievements):
+  ```bash
+  curl -s "https://retroachievements.org/API/API_GetComments.php?z=$RA_USER&y=$RA_KEY&i=<achievement-id>&t=2&c=50"
+  ```
+  Returns comments from the achievement's wall page. Filter out `"User": "Server"`
+  auto-generated messages and focus on player comments which often contain exact
+  strategies, locations, and tips. Save the most useful comment(s) in the
+  `communityTips` field so they're available for future reference without
+  re-fetching. This is the single best source for resolving ambiguous section
+  placements — player comments often state the exact location or trigger.
+
+- **RA API for achievement details**:
   ```bash
   curl -s "https://retroachievements.org/API/API_GetAchievementUnlocks.php?z=$RA_USER&y=$RA_KEY&a=<achievement-id>&c=1"
   ```
   Returns the full achievement object including the description with missable
-  cutoff info. This is the most reliable source for cutoff points.
+  cutoff info. Useful for confirming cutoff points.
 
 - **Web search**: Search `"<achievement name>" retroachievements phantasy star iv`
   to find player discussions, Reddit threads, and guide articles with
-  strategies and tips.
+  strategies and tips. Use when the Comments API returns no useful player
+  comments.
 
 - **RA Game page**: `https://retroachievements.org/game/<game-id>` — lists all
   achievements for the game with descriptions. Note: the RA website blocks
@@ -145,7 +157,15 @@ If confidence is Low for any section, list it separately so the user can verify.
    clarify WHEN it becomes unobtainable. Do NOT just match to the first section
    that mentions the related content. Follow this process for EACH missable:
 
-   **a) Query the RA API for the exact cutoff:**
+   **a) Check the RA Comments API for player tips FIRST:**
+   ```bash
+   curl -s "https://retroachievements.org/API/API_GetComments.php?z=$RA_USER&y=$RA_KEY&i=<achievement-id>&t=2&c=50"
+   ```
+   Player comments often reveal crucial info: whether an achievement is truly
+   missable (vs. just hard to find), the exact cutoff point, or alternative
+   locations where it can still be earned. Filter out `"User": "Server"` entries.
+
+   **b) Query the RA API for the exact cutoff:**
    ```bash
    # Get achievement details including the missable description
    curl -s "https://retroachievements.org/API/API_GetAchievementUnlocks.php?z=$RA_USER&y=$RA_KEY&a=<achievement-id>&c=1"
@@ -153,17 +173,18 @@ If confidence is Low for any section, list it separately so the user can verify.
    The `Achievement.Description` field typically includes the cutoff point,
    e.g. "(Missed upon finding Elsydeon.)" or "(Missed upon leaving Motavia.)"
 
-   **b) Map the cutoff to a walkthrough section:**
+   **c) Map the cutoff to a walkthrough section:**
    Translate the cutoff event to the specific section number where it occurs.
    For example, "Missed upon finding Elsydeon" → section 6.5.7 (Sword of the
    Espers). "Missed upon leaving Motavia" → section 6.2.12 (Upward Mobility
    — launching to Zelan leaves Motavia).
 
-   **c) Search the web for player tips:**
+   **d) Search the web for additional player tips:**
    Search for the achievement name + "retroachievements" to find forum posts
-   and guides with player strategies.
+   and guides with player strategies. Use when the Comments API provides
+   insufficient information.
 
-   **d) Write a concise tip** with the cutoff point and any strategic advice:
+   **e) Write a concise tip** with the cutoff point and any strategic advice:
    ```markdown
    > 🥈 **Achievement Title** — Description _(RetroAchievements · 10 pts)_
    > ⚠ **Missable** — must be completed before [specific event] ([section X.Y]). [1-2 sentences of strategic advice].
@@ -215,7 +236,13 @@ in the gamemds repo. Do NOT inject blockquotes into section `.md` files.
       "missableCutoffSection": "<section number where it becomes unavailable, only if missable>",
       "section": "<walkthrough section number>",
       "confidence": "<high|medium|low>",
-      "notes": "<strategic advice or clarification>"
+      "notes": "<strategic advice or clarification>",
+      "communityTips": [
+        {
+          "user": "<RA username>",
+          "text": "<useful player comment about this achievement>"
+        }
+      ]
     }
   ]
 }
@@ -279,3 +306,10 @@ git add -f guide/ && git commit -m "feat: add RetroAchievements annotations" && 
   each major location is visited. This reference list speeds up matching.
 - If the walkthrough has a separate "Boss Strategies" section, check it to
   verify which bosses appear where in the story.
+- **Use the RA Comments API for any achievement with medium/low confidence.**
+  Player comments are often definitive — they state the exact floor, town, or
+  trigger condition. Save the best comment as `communityTips` so it persists
+  in achievements.json.
+- **communityTips is optional.** Only include it when a player comment
+  provides useful information beyond what's in the achievement description.
+  Server/auto-generated comments should never be included.

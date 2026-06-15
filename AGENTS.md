@@ -77,7 +77,13 @@ The `achievements.json` schema:
 }
 ```
 
-Fields: `id`, `title`, `description`, `points`, `badgeUrl`, `displayOrder`, `type` (story|missable|collectible|challenge|secret|progress), `missable`, `missableCutoff`, `missableCutoffSection`, `section`, `confidence` (high|medium|low), `notes`.
+Fields: `id`, `title`, `description`, `points`, `badgeUrl`, `displayOrder`, `type` (story|missable|collectible|challenge|secret|progress), `missable`, `missableCutoff`, `missableCutoffSection`, `section`, `confidence` (high|medium|low), `notes`, `communityTips` (optional array of `{user, text}` with player comments from the RA Comments API).
+
+The RA Comments API provides player tips for ambiguous achievements:
+```bash
+curl -s "https://retroachievements.org/API/API_GetComments.php?z=$RA_USER&y=$RA_KEY&i=<achievement-id>&t=2&c=50"
+```
+Filter out `"User": "Server"` auto-generated messages. Useful player comments should be saved in the optional `communityTips` field.
 
 The `section` field joins to `toc.json` on the `num` field. The gamemds reader app loads `achievements.json` at runtime to render inline badges, missable warnings, and progress tracking.
 
