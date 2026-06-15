@@ -104,8 +104,17 @@ about which section each achievement belongs to, and produces an
 `achievements.md` (a checklist with missable table + by-section view) and
 prepends a `0.1 Achievement Checklist` entry to `toc.json`.
 
+For **ambiguous or low-confidence** placements, the agent uses the
+[RA Comments API](https://retroachievements.org) to fetch player tips
+(`API_GetComments.php?t=2`). Player comments often state the exact town,
+floor, or trigger location — the agent extracts these location hints,
+searches the walkthrough, and pins down the correct section number.
+Useful comments are saved in the optional `communityTips` field so they
+persist for future reference without re-fetching.
+
 **Achievement data flow:**
 - RetroAchievements API → `achievements.json` (committed alongside sections)
+- RA Comments API → `communityTips[]` for ambiguous achievements
 - `split-guide.js` reads `achievements.json` → `achievements.md` + updated `toc.json`
 - The gamemds reader app loads `achievements.json` at runtime to render inline badges, missable warnings, and localStorage-backed progress tracking
 
