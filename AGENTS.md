@@ -4,8 +4,8 @@
 Converts GameFAQs plain-text walkthroughs into clean, readable markdown files with a table of contents, internal anchor links, and properly formatted sections.
 
 ## Repository Separation
-This repo contains the **converter tool** and **opencode agent skills** only. Walkthrough content and the [faqmd.dev](https://faqmd.dev) site are in a separate repo:
-- **[faqmd-walkthroughs](https://github.com/danielcurran/faqmd-walkthroughs)** — hosted walkthrough content (HTML, reader app, guide files, deploy workflow)
+This repo contains the **converter tool** and **opencode agent skills** only. Walkthrough content and the [gamemds.org](https://gamemds.org) site are in a separate repo:
+- **[gamemds](https://github.com/danielcurran/gamemds)** — hosted walkthrough content (HTML, reader app, guide files, deploy workflow) at [gamemds.org](https://gamemds.org)
 
 ## Tech Stack
 - Node.js

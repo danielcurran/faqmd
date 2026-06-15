@@ -8,7 +8,7 @@ Convert GameFAQs walkthroughs into hyperlinked markdown — via Node.js script o
 | Repo | Purpose |
 |---|---|
 | **faqmd** (this repo) | Converter tool + opencode agent skills |
-| **[faqmd-walkthroughs](https://github.com/danielcurran/faqmd-walkthroughs)** | Walkthrough content hosted at [faqmd.dev](https://faqmd.dev) |
+| **[gamemds](https://github.com/danielcurran/gamemds)** | Walkthrough content hosted at [gamemds.org](https://gamemds.org) |
 
 The tool converts walkthroughs. The site hosts the converted results.
 No walkthrough content is committed to this repo.
@@ -154,9 +154,9 @@ node scripts/convert.js "https://gamefaqs.gamespot.com/.../faqs/12345?print=1"
 # 4. Split
 node scripts/split-guide.js walkthrough.md guide/
 
-# 5. Publish — copy to faqmd-walkthroughs repo (auto-deploys to faqmd.dev)
-cp -r guide/ /path/to/faqmd-walkthroughs/
-cd /path/to/faqmd-walkthroughs
+# 5. Publish — copy to gamemds repo (auto-deploys to gamemds.org)
+cp -r guide/ /path/to/gamemds/
+cd /path/to/gamemds
 git add -A && git commit -m "add walkthrough" && git push
 ```
 
