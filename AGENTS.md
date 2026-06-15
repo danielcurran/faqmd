@@ -22,6 +22,8 @@ This repo contains the **converter tool** and **opencode agent skills** only. Wa
 - `lib/reformat/classify.js` — Content classification helpers
 - `scripts/reformat.js` — Backward-compatible wrapper around `lib/reformat`
 - `scripts/test.js` — Standalone test runner (also available as `npm test`)
+- `scripts/fetch-achievements.js` — Fetches RA achievement data for any game ID, optionally with Comments API data
+- `scripts/validate-achievements.js` — Validates achievements.json schema and cross-references sections against toc.json
 - `scripts/sync-skills.js` — Copies repo skill files to `~/.config/opencode/skills/` (run via `npm run sync-skills`)
 - `package.json` — Defines `npm test`, `npm run convert`, `npm run sync-skills`, and Node engine requirement
 - `.github/workflows/test.yml` — CI: runs `npm test` on push/PR
@@ -54,30 +56,35 @@ The `achievements.json` schema:
 ```json
 {
   "schemaVersion": 1,
-  "gameId": 5633,
-  "gameTitle": "Phantasy Star IV",
-  "source": "https://retroachievements.org/game/5633",
-  "totalAchievements": 93,
-  "totalPoints": 400,
+  "gameId": <game-id>,
+  "gameTitle": "<game title>",
+  "source": "https://retroachievements.org/game/<game-id>",
+  "totalAchievements": <count>,
+  "totalPoints": <sum>,
   "achievements": [
     {
-      "id": 3807,
-      "title": "Hahn",
-      "description": "Recruit Hahn.",
-      "points": 1,
-      "badgeUrl": "https://retroachievements.org/Badge/3807.png",
-      "displayOrder": 1,
-      "type": "story",
-      "missable": false,
-      "section": "6.1.1",
-      "confidence": "high",
-      "notes": "Hahn joins automatically at the start of Chapter 6"
+      "id": <achievement-id>,
+      "title": "<name>",
+      "description": "<description>",
+      "points": <value>,
+      "badgeUrl": "https://retroachievements.org/Badge/<badge-name>.png",
+      "displayOrder": <order>,
+      "type": "<story|missable|collectible|challenge|secret|progress>",
+      "missable": <boolean>,
+      "missableCutoff": "<cutoff description, if missable>",
+      "missableCutoffSection": "<section num, if missable>",
+      "section": "<walkthrough section number>",
+      "confidence": "<high|medium|low>",
+      "notes": "<clarification or strategic advice>",
+      "communityTips": [
+        { "user": "<username>", "text": "<player comment>" }
+      ]
     }
   ]
 }
 ```
 
-Fields: `id`, `title`, `description`, `points`, `badgeUrl`, `displayOrder`, `type` (story|missable|collectible|challenge|secret|progress), `missable`, `missableCutoff`, `missableCutoffSection`, `section`, `confidence` (high|medium|low), `notes`, `communityTips` (optional array of `{user, text}` with player comments from the RA Comments API).
+Fields: `id`, `title`, `description`, `points`, `badgeUrl`, `displayOrder`, `type` (story|missable|collectible|challenge|secret|progress), `missable`, `missableCutoff`, `missableCutoffSection`, `section`, `confidence` (high|medium|low), `notes`, `communityTips` (optional array of `{user, text}`).
 
 The RA Comments API provides player tips for ambiguous achievements:
 ```bash
@@ -90,6 +97,8 @@ The `section` field joins to `toc.json` on the `num` field. The gamemds reader a
 ## Usage
 Convert: node scripts/convert.js [--title=NAME] [--author=NAME] <gamefaqs-print-url>
 Split: node scripts/split-guide.js <input.md> [output-dir]
+Fetch Achievements: node scripts/fetch-achievements.js --game=<id> [--output=FILE] [--comments]
+Validate Achievements: node scripts/validate-achievements.js guide/achievements.json
 Test: npm test
 
 ## Agent Skills

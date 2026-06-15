@@ -9,7 +9,9 @@
   "scripts": {
     "test": "node scripts/test.js",
     "convert": "node scripts/convert.js",
-    "sync-skills": "node scripts/sync-skills.js"
+    "sync-skills": "node scripts/sync-skills.js",
+    "fetch-achievements": "node scripts/fetch-achievements.js",
+    "validate-achievements": "node scripts/validate-achievements.js"
   },
   "engines": {
     "node": ">=18"

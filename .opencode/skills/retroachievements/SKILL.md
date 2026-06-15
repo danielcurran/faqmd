@@ -20,8 +20,8 @@ export RA_KEY=your_api_key
 ## Usage
 
 ```
-"Match RetroAchievements for game 50 to guide/ walkthrough sections"
-"Cross-reference achievements for game 5633 with walkthrough.md"
+"Match RetroAchievements for game <game-id> to guide/ walkthrough sections"
+"Cross-reference achievements for game <game-id> with walkthrough.md"
 ```
 
 ---
@@ -30,25 +30,47 @@ export RA_KEY=your_api_key
 
 Follow these steps in order. Do NOT skip the verification pass.
 
-### Step 1: Fetch achievements
+### Step 1: Pre-fetch achievement data
+
+Run the fetch script to pull all achievements from the RA API:
 
 ```bash
-curl -s "https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=$RA_USER&y=$RA_KEY&g=<game-id>&u=$RA_USER" -o /tmp/ra.json
+node scripts/fetch-achievements.js --game=<game-id> --output=guide/achievements-raw.json --comments
 ```
 
-Each achievement has: `ID`, `Title`, `Description`, `Points`, `DisplayOrder`.
+With `--comments`, this also fetches player tips from the RA Comments API for
+every achievement and stores them in `communityTips[]`. Without `--comments`,
+achievement data is fetched but `communityTips` is left empty (the agent can
+fetch comments on-demand for ambiguous achievements later).
 
-Print the full list so the user can review before matching begins:
+The output JSON already has `id`, `title`, `description`, `points`, `badgeUrl`,
+`displayOrder`, `type`, and `missable` pre-filled. The agent only needs to fill:
+`section`, `confidence`, `notes`, `missableCutoffSection`.
+
+Print the achievement list so the user can review before matching begins:
 
 ```
 Achievement list for game <id> (N achievements):
 
-3807  🥉  Hahn                       Recruit Hahn.                                          1 pts
-3819  🥉  Academy Infestation        Solve the monster situation in the academy basement.   5 pts
+1001  🥉  First Achievement            Description text here.                                1 pts
+1002  🥉  Second Achievement           Description text here.                                5 pts
 ...
 ```
 
 Ask the user to confirm the game and count before proceeding.
+
+**Manual API reference (if the pre-fetch script cannot be used):**
+
+```bash
+# Fetch all achievements for a game
+curl -s "https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=$RA_USER&y=$RA_KEY&g=<game-id>&u=$RA_USER"
+
+# Fetch comments for a specific achievement
+curl -s "https://retroachievements.org/API/API_GetComments.php?z=$RA_USER&y=$RA_KEY&i=<achievement-id>&t=2&c=50"
+
+# Fetch achievement details (includes cutoff info)
+curl -s "https://retroachievements.org/API/API_GetAchievementUnlocks.php?z=$RA_USER&y=$RA_KEY&a=<achievement-id>&c=1"
+```
 
 ### Step 2: Understand the walkthrough structure
 
@@ -88,8 +110,9 @@ If the description mentions a MECHANIC (combo, macro, technique):
   → Do NOT place in appendix/reference sections (Combinations, Abilities, etc.)
   → Add this note: "This achievement can be earned over the course of the
      playthrough — it is not necessary or beneficial to grind for it at this point."
-  → Example: "Execute Combo TriBlaster" requires Chaz+Alys+Hahn → section 6.1.1
-     (first section all three are in the party), NOT section 12.1 (Combinations).
+  → In Phantasy Star IV, for example: "Execute Combo TriBlaster" requires
+     Chaz+Alys+Hahn → section 6.1.1 (first section all three are in the party),
+     NOT section 12.1 (Combinations appendix).
 
 If the achievement is a "LIMIT" or challenge variant of a boss:
   → Match to the SAME section as the non-limit version
@@ -150,8 +173,10 @@ If confidence is Low for any section, list it separately so the user can verify.
 
 ### Step 4: Common pitfalls (read before matching)
 
-1. **Boss introduction vs. boss fight**: If a boss is mentioned in section
-   6.1.5 but fought in 6.4.8, the achievement goes in 6.4.8, not 6.1.5.
+1. **Boss introduction vs. boss fight**: If a boss is mentioned in chapter
+   introduction (section X.1) but fought later (section X.5), the achievement
+   goes in X.5, not X.1. In Phantasy Star IV, for example, Zio is introduced
+   in section 6.1.5 but fought in 6.2.11 — the achievement goes in 6.2.11.
 
 2. **Progression-gated achievements**: "Reach the town of X" should map to the
    section where the player FIRST arrives at X, not every subsequent section
@@ -169,9 +194,9 @@ If confidence is Low for any section, list it separately so the user can verify.
    becomes usable, NOT in appendix/reference sections (Combinations appendix,
    Abilities section, etc.). Determine when the required party members or
    abilities first become available, and place the achievement there. Add a note
-   that it can be earned over the playthrough. Example: TriBlaster requires
-   Chaz+Alys+Hahn → place in the first story section all three are together
-   (e.g. 6.1.1), not in section 12.1 (Combinations).
+   that it can be earned over the playthrough. In Phantasy Star IV, for example,
+   TriBlaster (Chaz+Alys+Hahn) goes in section 6.1.1, not in the Combinations
+   appendix (12.1).
 
 6. **Missable achievements**: These are the most error-prone. The achievement
    description typically includes "(Missable)" or "(Missed upon...)" but may not
@@ -194,12 +219,13 @@ If confidence is Low for any section, list it separately so the user can verify.
    ```
    The `Achievement.Description` field typically includes the cutoff point,
    e.g. "(Missed upon finding Elsydeon.)" or "(Missed upon leaving Motavia.)"
+   (real examples from Phantasy Star IV).
 
    **c) Map the cutoff to a walkthrough section:**
    Translate the cutoff event to the specific section number where it occurs.
-   For example, "Missed upon finding Elsydeon" → section 6.5.7 (Sword of the
-   Espers). "Missed upon leaving Motavia" → section 6.2.12 (Upward Mobility
-   — launching to Zelan leaves Motavia).
+   In Phantasy Star IV, for example: "Missed upon finding Elsydeon" → section
+   6.5.7 (Sword of the Espers). "Missed upon leaving Motavia" → section 6.2.12
+   (Upward Mobility — launching to Zelan leaves Motavia).
 
    **d) Search the web for additional player tips:**
    Search for the achievement name + "retroachievements" to find forum posts
@@ -216,6 +242,7 @@ If confidence is Low for any section, list it separately so the user can verify.
    > 🥈 **Tectonic Tech** — Solve Plate System's earthquake malfunction. _(RetroAchievements · 10 pts)_
    > ⚠ **Missable** — must be completed before leaving Motavia (6.2.12). Shut down the Plate System controls in section 6.2.7 before launching to Zelan.
    ```
+   (The above is a real example from the Phantasy Star IV walkthrough.)
    If research doesn't clarify the cutoff, flag it as "cutoff unknown — verify manually."
 
 7. **Post-game / secret achievements**: Sound test, optional dungeons, secret
@@ -284,13 +311,29 @@ in the gamemds repo. Do NOT inject blockquotes into section `.md` files.
 **Unmatched achievements**: set `confidence` to `"low"` and add a note explaining
 why the match is uncertain. Do NOT omit achievements from the JSON.
 
-### Step 6: Generate achievements.md
+### Step 6: Validate achievements.json
+
+Run the validation script to catch schema errors and section mismatches:
+
+```bash
+node scripts/validate-achievements.js guide/achievements.json
+```
+
+This checks:
+- All required fields are present and valid
+- Type and confidence enums are correct
+- Every `section` value exists in `toc.json`
+- Missable achievements have cutoff information
+- No empty/unmatched sections
+- Point totals match
+
+### Step 7: Generate achievements.md
 
 Run `node scripts/split-guide.js walkthrough.md guide/` which will:
 - Generate `achievements.md` from `achievements.json`
 - Insert a `0.1 Achievement Checklist` entry at the top of `toc.json`
 
-### Step 7: Review with the user
+### Step 8: Review with the user
 
 Before finalizing, show a summary:
 
@@ -305,7 +348,7 @@ Proceed with injection? y/n
 This lets the user spot-check and correct any mistakes before changes are
 written.
 
-### Step 8: Rebuild and deploy
+### Step 9: Rebuild and deploy
 
 After injection:
 
@@ -331,9 +374,19 @@ git add -f guide/ && git commit -m "feat: add RetroAchievements annotations" && 
 - **Use the RA Comments API for any achievement with medium/low confidence.**
   Player comments often state the exact floor, town, or trigger condition.
   Then search the walkthrough for that location to find the correct section.
-  Example: "Welcome To The Phantasy Zone" described as "Opa! Opa!" was
-  originally placed in section 18 (Sound Test), but a player comment
-  revealed "you must see the dancers dance in Aiedo" — searching the
-  walkthrough for "dance" found it in section 6.2.1 (Hunters Guild theatre).
+  Example from the Phantasy Star IV walkthrough: "Welcome To The Phantasy
+  Zone" described as "Opa! Opa!" was originally placed in section 18 (Sound
+  Test), but a player comment revealed "you must see the dancers dance in
+  Aiedo" — searching the walkthrough for "dance" found it in section 6.2.1
+  (Hunters Guild theatre).
 - **Save the best comment as `communityTips`** so it persists in
   achievements.json for future reference without re-fetching the API.
+
+## Worked Example
+
+The PSIV walkthrough at `guide/` in the gamemds repo is a fully worked example.
+The skill's examples (TriBlaster placement, Elsydeon cutoff, Welcome To The
+Phantasy Zone comment resolution) all reference real matches made against that
+walkthrough. When uncertain about a rule, the agent can read `guide/toc.json`
+and `guide/achievements.json` from the gamemds repo to see how the pattern was
+applied in practice.
