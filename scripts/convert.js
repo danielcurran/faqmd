@@ -4,26 +4,38 @@ const fs = require('fs');
 const path = require('path');
 const { reformat } = require('./reformat');
 const { extractText, parseTOC, splitSections, escapeMd, anchorId } = require('../lib/convert-core');
+const { parseArgs, showHelp, validateOutputPath } = require('../lib/cli');
 
-let URL = null;
-let OUTPUT = path.join(__dirname, 'walkthrough.md');
+const SCRIPT_NAME = 'faqmd';
+const SCRIPT_DIR = __dirname;
 
-// Parse named flags: --title="Game Name", --author="Author Name"
-let titleOverride = null;
-let authorOverride = null;
-const positional = [];
-for (let i = 2; i < process.argv.length; i++) {
-  const arg = process.argv[i];
-  if (arg.startsWith('--title=')) {
-    titleOverride = arg.slice('--title='.length);
-  } else if (arg.startsWith('--author=')) {
-    authorOverride = arg.slice('--author='.length);
-  } else {
-    positional.push(arg);
+const cli = parseArgs(process.argv.slice(2), {
+  flags: {
+    title: { value: 'NAME', desc: 'Override the walkthrough title' },
+    author: { value: 'NAME', desc: 'Override the walkthrough author' },
   }
+});
+
+if (cli.help) {
+  showHelp(SCRIPT_NAME, 'Convert a GameFAQs walkthrough to Markdown.', {
+    usage: '[options] [<url-or-file>] [<output.md>]',
+    flags: {
+      title: { value: 'NAME', desc: 'Override the walkthrough title' },
+      author: { value: 'NAME', desc: 'Override the walkthrough author' },
+    },
+    examples: [
+      'faqmd',
+      'faqmd https://gamefaqs.gamespot.com/.../faqs/...?print=1',
+      'faqmd --title="Phantasy Star IV" --author="Seb Holt" raw.txt psiv.md',
+    ]
+  });
+  process.exit(0);
 }
-if (positional.length > 0) URL = positional[0];
-if (positional.length > 1) OUTPUT = positional[1];
+
+let URL = cli.positional[0] || null;
+let OUTPUT = cli.positional[1] || path.join(SCRIPT_DIR, 'walkthrough.md');
+const titleOverride = cli.flags.title || null;
+const authorOverride = cli.flags.author || null;
 
 function fetch(url) {
   return new Promise((resolve, reject) => {
@@ -64,6 +76,10 @@ async function main() {
   const toc = parseTOC(text);
   const tocWarning = toc.length === 0 ? ' (WARNING: no TOC entries parsed)' : '';
   console.log('Found ' + toc.length + ' sections' + tocWarning);
+  if (toc.length === 0) {
+    console.error('Error: no TOC entries parsed — input does not appear to be a GameFAQs walkthrough');
+    process.exit(1);
+  }
 
   const sections = splitSections(text, toc);
   const matchPct = toc.length > 0 ? Math.round(sections.length / toc.length * 100) : 0;
@@ -92,12 +108,7 @@ async function main() {
     md += reformat(s.content) + '\n\n';
   }
 
-  const resolved = path.resolve(OUTPUT);
-  const safeBase = path.resolve(process.cwd());
-  if (!resolved.startsWith(safeBase + path.sep) && resolved !== safeBase && !resolved.startsWith(path.resolve(__dirname) + path.sep)) {
-    console.error('Error: output path must be within the current working directory or script directory');
-    process.exit(1);
-  }
+  validateOutputPath(OUTPUT, [process.cwd(), SCRIPT_DIR]);
   fs.writeFileSync(OUTPUT, md);
   console.log('Saved to ' + OUTPUT + ' (' + md.length + ' bytes)');
 }
