@@ -219,7 +219,7 @@ indexContent.push('## All Sections');
 indexContent.push('');
 for (const e of tocEntries) {
   const indent = '  '.repeat(e.depth);
-  const link = e.filename ? `[${e.num}. ${e.title}](${e.filename})` : `**${e.num}. ${e.title}**`;
+  const link = e.filename ? `[${e.num}. ${e.strippedTitle}](${e.filename})` : `**${e.num}. ${e.strippedTitle}**`;
   indexContent.push(`${indent}- ${link}`);
 }
 
@@ -231,7 +231,7 @@ const tocTree = [];
 const stack = [{ children: tocTree, depth: -1 }];
 for (const e of tocEntries) {
   const depth = (e.num.match(/\./g) || []).length;
-  const node = { num: e.num, title: e.title, file: e.filename, depth, children: [] };
+  const node = { num: e.num, title: e.strippedTitle, file: e.filename, depth, children: [] };
   while (stack.length > 1 && stack[stack.length - 1].depth >= depth) {
     stack.pop();
   }
