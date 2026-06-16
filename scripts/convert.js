@@ -3,7 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { reformat } = require('./reformat');
-const { extractText, parseTOC, splitSections, escapeMd, anchorId } = require('../lib/convert-core');
+const { extractText, parseTOC, splitSections, escapeMd, anchorId, detectFormat, parseRomanTOC, splitRomanSections } = require('../lib/convert-core');
 const { parseArgs, showHelp, validateOutputPath } = require('../lib/cli');
 
 const SCRIPT_NAME = 'faqmd';
@@ -73,22 +73,45 @@ async function main() {
   const text = extractText(html);
   console.log('Extracted ' + text.length + ' chars');
 
-  const toc = parseTOC(text);
-  const tocWarning = toc.length === 0 ? ' (WARNING: no TOC entries parsed)' : '';
-  console.log('Found ' + toc.length + ' sections' + tocWarning);
-  if (toc.length === 0) {
-    console.error('Error: no TOC entries parsed — input does not appear to be a GameFAQs walkthrough');
-    process.exit(1);
-  }
+  const format = detectFormat(text);
+  let toc, sections;
 
-  const sections = splitSections(text, toc);
-  const matchPct = toc.length > 0 ? Math.round(sections.length / toc.length * 100) : 0;
-  console.log('Split into ' + sections.length + ' sections (' + matchPct + '% of TOC matched)');
-  if (toc.length > 0 && matchPct < 80) {
-    console.log('WARNING: fewer than 80% of TOC entries matched body sections');
-  }
-  if (sections.length === 0) {
-    console.log('WARNING: no sections extracted — check GameFAQs page format');
+  if (format === 'roman') {
+    toc = parseRomanTOC(text);
+    const tocWarning = toc.length === 0 ? ' (WARNING: no TOC entries parsed)' : '';
+    console.log('Detected roman-numeral format');
+    console.log('Found ' + toc.length + ' sections' + tocWarning);
+    if (toc.length === 0) {
+      console.error('Error: no TOC entries parsed — input does not appear to be a GameFAQs walkthrough');
+      process.exit(1);
+    }
+    sections = splitRomanSections(text, toc);
+    const matchPct = toc.length > 0 ? Math.round(sections.length / toc.length * 100) : 0;
+    console.log('Split into ' + sections.length + ' sections (' + matchPct + '% of TOC matched)');
+    if (sections.length === 0) {
+      console.log('WARNING: no sections extracted — check GameFAQs page format');
+    }
+  } else if (format === 'standard') {
+    toc = parseTOC(text);
+    const tocWarning = toc.length === 0 ? ' (WARNING: no TOC entries parsed)' : '';
+    console.log('Detected standard (CCODE) format');
+    console.log('Found ' + toc.length + ' sections' + tocWarning);
+    if (toc.length === 0) {
+      console.error('Error: no TOC entries parsed — input does not appear to be a GameFAQs walkthrough');
+      process.exit(1);
+    }
+    sections = splitSections(text, toc);
+    const matchPct = toc.length > 0 ? Math.round(sections.length / toc.length * 100) : 0;
+    console.log('Split into ' + sections.length + ' sections (' + matchPct + '% of TOC matched)');
+    if (toc.length > 0 && matchPct < 80) {
+      console.log('WARNING: fewer than 80% of TOC entries matched body sections');
+    }
+    if (sections.length === 0) {
+      console.log('WARNING: no sections extracted — check GameFAQs page format');
+    }
+  } else {
+    console.error('Error: unknown walkthrough format — cannot determine section markers');
+    process.exit(1);
   }
 
   let md = '# ' + (titleOverride || sections[0]?.title || 'Walkthrough') + '\n\n';

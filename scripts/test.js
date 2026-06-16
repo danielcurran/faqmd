@@ -4,11 +4,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const { extractText, parseTOC, splitSections, escapeMd, anchorId } = require('../lib/convert-core');
+const { extractText, parseTOC, splitSections, escapeMd, anchorId, detectFormat, romanToInt, parseRomanTOC, splitRomanSections } = require('../lib/convert-core');
 const {
   reformat, reformatBlock, formatProse, formatStatBlock, formatDecorativeText,
   classifyArtBlock, formatEquipmentTable, formatBossCard,
-  formatCharacterSheet, formatCharacterPortrait
+  formatCharacterSheet, formatCharacterPortrait, formatRomanSubHeader
 } = require('./reformat');
 const { stripFrameChars, isPureBorderRow, formatShopList } = require('../lib/reformat/format');
 const { hasEquipSlotLines, isBossCard, isShopBlock, isCharacterSheet, isCharacterPortrait } = require('../lib/reformat/detect');
@@ -443,6 +443,196 @@ assert('e2e: walkthrough.md is substantial', () => {
   const p = path.join(__dirname, 'walkthrough.md');
   const stat = fs.statSync(p);
   if (stat.size < 500000) throw new Error('File too small: ' + stat.size + ' bytes');
+});
+
+// ── Roman-numeral format: romanToInt ──
+assert('romanToInt: single letters', () => {
+  if (romanToInt('i') !== 1) throw new Error('i should be 1');
+  if (romanToInt('v') !== 5) throw new Error('v should be 5');
+  if (romanToInt('x') !== 10) throw new Error('x should be 10');
+  if (romanToInt('l') !== 50) throw new Error('l should be 50');
+});
+
+assert('romanToInt: subtractive notation', () => {
+  if (romanToInt('iv') !== 4) throw new Error('iv should be 4');
+  if (romanToInt('ix') !== 9) throw new Error('ix should be 9');
+  if (romanToInt('xlv') !== 45) throw new Error('xlv should be 45, got ' + romanToInt('xlv'));
+});
+
+assert('romanToInt: multi-letter', () => {
+  if (romanToInt('xx') !== 20) throw new Error('xx should be 20');
+  if (romanToInt('xviii') !== 18) throw new Error('xviii should be 18');
+  if (romanToInt('xxxix') !== 39) throw new Error('xxxix should be 39');
+});
+
+assert('romanToInt: zero passes through', () => {
+  if (romanToInt('0') !== 0) throw new Error('0 should be 0');
+});
+
+// ── Roman-numeral format: detectFormat ──
+assert('detectFormat: detects roman format with +===+', () => {
+  if (detectFormat('+====================================+\n| i. Title |\n+======+') !== 'roman')
+    throw new Error('Should detect roman format');
+});
+
+assert('detectFormat: detects roman format with diamond header', () => {
+  const diamond = '/\\' + '='.repeat(30) + '/\\\n|| 0. Version ||\n\\/' + '='.repeat(30) + '/';
+  if (detectFormat(diamond) !== 'roman')
+    throw new Error('Should detect diamond roman format');
+});
+
+assert('detectFormat: detects standard format with CCODE', () => {
+  if (detectFormat('1. Intro                             CINRO\nCWALK') !== 'standard')
+    throw new Error('Should detect standard format');
+});
+
+assert('detectFormat: returns unknown for plain text', () => {
+  if (detectFormat('Just a walkthrough with no markers.') !== 'unknown')
+    throw new Error('Should return unknown');
+});
+
+// ── Roman-numeral format: parseRomanTOC ──
+assert('parseRomanTOC: parses full TOC structure', () => {
+  const tocText = [
+    ' 0---0------------------------------------------------------0---0',
+    ' |   |                   TABLE OF CONTENTS                  |   |',
+    ' |   |                  +-----------------+                 |   |',
+    ' 0---0------------------------------------------------------0---0',
+    ' |   |   0. VERSION HISTORY                                 |   |',
+    ' |   |   I. INTRODUCTION                                    |   |',
+    ' |===|======================================================|===|',
+    ' |   |                    DRAGON QUEST I                    |   |',
+    ' |===|======================================================|===|',
+    ' |   |     I. WALKTHROUGH                                   |   |',
+    ' |   |      i. Introduction                                 |   |',
+    ' |   |     ii. Radatome Castle                              |   |',
+    ' |===|======================================================|===|',
+    ' |   |      DRAGON QUEST II: GODS OF THE EVIL SPIRITS       |   |',
+    ' |===|======================================================|===|',
+    ' |   |     I. WALKTHROUGH                                   |   |',
+    ' |   |      i. Introduction                                 |   |',
+    ' |   |     ii. Laurasia Castle                              |   |',
+    ' |   |   II. CONCLUSION                                     |   |',
+    ' |   |  III. NEXT TIME...                                   |   |',
+  ].join('\n');
+
+  const toc = parseRomanTOC(tocText);
+  if (toc.length < 7) throw new Error('Expected at least 7 entries, got ' + toc.length);
+  if (toc[0].num !== '0' || toc[0].title !== 'VERSION HISTORY') throw new Error('Entry 0: ' + JSON.stringify(toc[0]));
+  if (toc[1].num !== '1' || toc[1].title !== 'INTRODUCTION') throw new Error('Entry 1: ' + JSON.stringify(toc[1]));
+  if (toc[2].num !== '2' || toc[2].title !== 'WALKTHROUGH') throw new Error('Entry 2: ' + JSON.stringify(toc[2]));
+  if (toc[3].num !== '2.1' || toc[3].title !== 'Introduction') throw new Error('Entry 3: ' + JSON.stringify(toc[3]));
+  if (toc[4].num !== '2.2' || toc[4].title !== 'Radatome Castle') throw new Error('Entry 4: ' + JSON.stringify(toc[4]));
+  // DQ II sections
+  const dq2Walk = toc.find(e => e.num === '3');
+  if (!dq2Walk || dq2Walk.title !== 'WALKTHROUGH') throw new Error('Missing DQ II walkthrough');
+  const dq2Intro = toc.find(e => e.num === '3.1');
+  if (!dq2Intro || dq2Intro.title !== 'Introduction') throw new Error('Missing DQ II intro');
+  const dq2Laur = toc.find(e => e.num === '3.2');
+  if (!dq2Laur || dq2Laur.title !== 'Laurasia Castle') throw new Error('Missing DQ II Laurasia');
+  // Post-game sections
+  const concl = toc.find(e => e.num === '4');
+  if (!concl || concl.title !== 'CONCLUSION') throw new Error('Missing CONCLUSION');
+  const next = toc.find(e => e.num === '5');
+  if (!next || next.title !== 'NEXT TIME...') throw new Error('Missing NEXT TIME');
+});
+
+assert('parseRomanTOC: sets correct levels', () => {
+  const tocText = [
+    ' |   |                   TABLE OF CONTENTS                  |   |',
+    ' |   |   0. VERSION HISTORY                                 |   |',
+    ' |   |                    DRAGON QUEST I                    |   |',
+    ' |   |     I. WALKTHROUGH                                   |   |',
+    ' |   |      i. Introduction                                 |   |',
+  ].join('\n');
+
+  const toc = parseRomanTOC(tocText);
+  if (toc[0].level !== 1) throw new Error('Level-1 entry should be level 1, got ' + toc[0].level);
+  if (toc[1].level !== 1) throw new Error('Level-1 walkthrough should be level 1, got ' + toc[1].level);
+  if (toc[2].level !== 2) throw new Error('Level-2 subsection should be level 2, got ' + toc[2].level);
+});
+
+// ── Roman-numeral format: splitRomanSections ──
+assert('splitRomanSections: splits body by diamond headers', () => {
+  const body = [
+    ' 0---0------------------------------------------------------0---0',
+    ' |   |                   TABLE OF CONTENTS                  |   |',
+    ' 0---0------------------------------------------------------0---0',
+    ' 0---0------------------------------------------------------0---0',
+    ' |   |                   TABLE OF CONTENTS                  |   |',
+    ' 0---0------------------------------------------------------0---0',
+    '  /\\============================================================/\\',
+    '  ||                     0. VERSION HISTORY                      ||',
+    '  \\/============================================================\\/',
+    '  Version: Final',
+    '',
+    '  Guide completed!',
+    '',
+    '  /\\============================================================/\\',
+    '  ||                      I. INTRODUCTION                       ||',
+    '  \\/============================================================\\/',
+    '  Welcome to this guide.',
+  ].join('\n');
+
+  const toc = parseRomanTOC(body);
+  const sections = splitRomanSections(body, toc);
+  if (sections.length !== 2) throw new Error('Expected 2 sections, got ' + sections.length);
+  if (!sections[0].content.includes('Version: Final')) throw new Error('Missing version content: ' + sections[0].content);
+  if (!sections[1].content.includes('Welcome')) throw new Error('Missing intro content: ' + sections[1].content);
+});
+
+assert('splitRomanSections: splits body by box headers', () => {
+  const body = [
+    ' |   |                   TABLE OF CONTENTS                  |   |',
+    ' |   |   0. VERSION HISTORY                                 |   |',
+    ' |   |     I. WALKTHROUGH                                   |   |',
+    ' |   |      i. Introduction                                 |   |',
+    ' 0---0------------------------------------------------------0---0',
+    ' |   |                   TABLE OF CONTENTS                  |   |',
+    ' 0---0------------------------------------------------------0---0',
+    '  /\\============================================================/\\',
+    '  ||                     0. VERSION HISTORY                      ||',
+    '  \\/============================================================\\/',
+    '  Version info here.',
+    '',
+    '  /\\============================================================/\\',
+    '  ||                      I. WALKTHROUGH                        ||',
+    '  \\/============================================================\\/',
+    '  Walkthrough starts.',
+    '',
+    '  +==============================================================+',
+    '  |                      i. Introduction                         |',
+    '  +==============================================================+',
+    '  Introduction text here.',
+  ].join('\n');
+
+  const toc = parseRomanTOC(body);
+  const sections = splitRomanSections(body, toc);
+  if (sections.length !== 3) throw new Error('Expected 3 sections, got ' + sections.length);
+  if (!sections[2].content.includes('Introduction text')) throw new Error('Missing walkthrough intro: ' + sections[2].content);
+});
+
+// ── Roman-format: reformat sub-headers ──
+assert('formatRomanSubHeader: formats overworld sub-header', () => {
+  const lines = [
+    '+--------------------------------------------------------------+',
+    '|                        - Overworld -                         |',
+    '|                     (Radatome Outskirts)                     |',
+    '+--------------------------------------------------------------+',
+  ];
+  const r = formatRomanSubHeader(lines);
+  if (!r.includes('**Overworld**')) throw new Error('Expected Overworld bold, got: ' + r);
+  if (!r.includes('*(Radatome Outskirts)*')) throw new Error('Expected parenthetical italic, got: ' + r);
+});
+
+assert('formatRomanSubHeader: formats simple location label', () => {
+  const lines = [
+    '+--------------------------------------------------------------+',
+    '|                        - Dungeon B1 -                        |',
+    '+--------------------------------------------------------------+',
+  ];
+  const r = formatRomanSubHeader(lines);
+  if (!r.includes('**Dungeon B1**')) throw new Error('Expected Dungeon B1 bold, got: ' + r);
 });
 
 // ── Summary ──
