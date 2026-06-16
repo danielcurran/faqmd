@@ -338,6 +338,9 @@ function generateAchievementsMd(outputDir) {
     if (!a.missableCutoffSection || !b.missableCutoffSection) return 0;
     return a.missableCutoffSection.localeCompare(b.missableCutoffSection, undefined, { numeric: true });
   });
+  const ongoing = ach.achievements.filter(a => a.ongoing && !a.missable).sort((a, b) =>
+    (a.section || '').localeCompare(b.section || '', undefined, { numeric: true })
+  );
 
   const bySection = {};
   for (const a of ach.achievements) {
@@ -352,7 +355,7 @@ function generateAchievementsMd(outputDir) {
   lines.push(`<a id="${anchorId('0.1')}"></a>`);
   lines.push('## 0.1. Achievement Checklist');
   lines.push('');
-  lines.push(`**${ach.totalAchievements} achievements · ${ach.totalPoints} points · ${missables.length} missable**`);
+  lines.push(`**${ach.totalAchievements} achievements · ${ach.totalPoints} points · ${missables.length} missable · ${ongoing.length} ongoing**`);
   lines.push('');
 
   if (missables.length > 0) {
@@ -373,6 +376,21 @@ function generateAchievementsMd(outputDir) {
     lines.push('');
   }
 
+  if (ongoing.length > 0) {
+    lines.push('### Ongoing Achievements 🔓');
+    lines.push('');
+    lines.push('Complete these naturally over the course of the playthrough — no grinding needed.');
+    lines.push('');
+    lines.push('| Achievement | Pts | Available From | Tip |');
+    lines.push('|---|---|---|---|');
+    for (const a of ongoing) {
+      const availLink = `[${a.section}](#${anchorId(a.section)})`;
+      const tip = a.notes || '';
+      lines.push(`| ${medal(a.points)} ${a.title} | ${a.points} | ${availLink} | ${tip} |`);
+    }
+    lines.push('');
+  }
+
   lines.push('### By Section');
   lines.push('');
   const sortedSections = Object.keys(bySection).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
@@ -383,7 +401,8 @@ function generateAchievementsMd(outputDir) {
     lines.push('');
     for (const a of achs) {
       const missableTag = a.missable ? ' ⚠️ Missable' : '';
-      lines.push(`- [ ] ${medal(a.points)} **${a.title}** — ${a.description} (${a.points} pts)${missableTag}`);
+      const ongoingTag = a.ongoing && !a.missable ? ' 🔓 Ongoing' : '';
+      lines.push(`- [ ] ${medal(a.points)} **${a.title}** — ${a.description} (${a.points} pts)${missableTag}${ongoingTag}`);
     }
     lines.push('');
   }

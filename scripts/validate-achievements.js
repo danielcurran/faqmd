@@ -111,6 +111,11 @@ function validate(achPath, tocPath) {
       }
     }
 
+    // ongoing must be boolean if present
+    if (a.ongoing !== undefined && typeof a.ongoing !== 'boolean') {
+      errors.push(prefix + ' ongoing must be boolean');
+    }
+
     // Section must exist in TOC
     if (tocSections && a.section && !tocSections.has(a.section)) {
       errors.push(prefix + ' section "' + a.section + '" not found in toc.json');

@@ -53,7 +53,7 @@ This creates a `guide/` directory with `index.md` + one file per section.
 
 ## opencode Agent Skills
 
-Four agent skills are included for use with [opencode](https://opencode.ai).
+Three agent skills are included for use with [opencode](https://opencode.ai).
 
 ### faqmd — Convert walkthroughs
 
@@ -139,26 +139,6 @@ cp skills/reformat-review-skill.md ~/.config/opencode/skills/reformat-review/SKI
 
 Usage: `"Run reformat-review on walkthrough.md"`
 
-### art-modernize — Upgrade ASCII art to HTML
-
-Replaces tagged ASCII art blocks with modern HTML components:
-
-- Town maps → `.game-map` grid layouts
-- Boss boxes → `.boss-card` encounter cards
-- Character stat cards → `.stat-card` grids
-- Equipment tables → styled `.equipment-table`
-- Menu UIs → `.game-menu` buttons
-- Decorative labels → `.section-marker` headers
-
-Install:
-
-```bash
-mkdir -p ~/.config/opencode/skills/art-modernize
-cp skills/art-modernize-skill.md ~/.config/opencode/skills/art-modernize/SKILL.md
-```
-
-Usage: `"Run art-modernize on walkthrough.md"`
-
 ---
 
 ## Full Pipeline
@@ -173,7 +153,6 @@ node scripts/convert.js "https://gamefaqs.gamespot.com/.../faqs/12345?print=1"
 
 # 3. Review and polish (optional, via opencode agent skills)
 # "Run reformat-review on walkthrough.md"   — fix tables, stat blocks, bullet lists
-# "Run art-modernize on walkthrough.md"    — upgrade ASCII art to HTML components
 
 # 4. Split (also generates achievements.md + updates toc.json if achievements.json exists)
 node scripts/split-guide.js walkthrough.md guide/
@@ -203,7 +182,7 @@ git add -A && git commit -m "add walkthrough" && git push
 - **ASCII art portraits** stripped to a clean profile line (`Name — Race (Class) · Age · Sex · Lives`)
 - **Equipment tables** converted to markdown pipe tables
 - **Stat blocks** (party info, enemy data) formatted as bold `**Key:** Value`; multi-column layouts now parsed correctly
-- **ASCII art** (maps, dungeon layouts) preserved in code blocks with `<!-- MODERNIZE:TYPE -->` tags for the art-modernize agent skill
+- **ASCII art** (maps, dungeon layouts) preserved in code blocks
 - **Paragraph breaks** at walkthrough instruction steps (Go, Turn, Take, Enter)
 - **Decorative headers** (`// DUNGEON #2`) stripped to clean bold text
 - **RetroAchievements** — `achievements.json` data file with section mapping, missable cutoff tracking, and strategic notes. `split-guide.js` generates a standalone checklist (`achievements.md`) with missable table + by-section checkboxes. The gamemds reader app renders inline badges, missable/upcoming cutoff alerts, a collapsible sidebar filter panel with type filters, and localStorage progress tracking with interactive checklist checkboxes.
@@ -227,8 +206,7 @@ The converter:
 5. **Classifies** each content block — prose, table, ASCII art, stat block, decorative, boss card, shop listing, character sheet, character portrait
 6. **Reformats** each type — prose to paragraphs, tables to markdown, art to code blocks, stats to bold labels, boss cards/shops/character sheets to plain-text extractions, portraits to profile lines
 7. **Strips** simple decorations (`// DUNGEON`, `\ Boss:`) to clean bold text
-8. **Tags** complex art blocks with `<!-- MODERNIZE:TYPE -->` for downstream agent skills
-9. **Generates** a TOC with anchor links
+8. **Generates** a TOC with anchor links
 
 ## Files
 
@@ -239,7 +217,7 @@ The converter:
 | `lib/cli.js` | Shared zero-dependency CLI argument parsing helpers |
 | `lib/reformat/index.js` | Public reformatting API |
 | `lib/reformat/detect.js` | Block-type detection (prose, table, ASCII art, stat block, decorative, boss card, shop listing, character sheet, character portrait) |
-| `lib/reformat/format.js` | Per-block formatting, plain-text extraction (boss/shop/character/portrait), and `<!-- MODERNIZE:TYPE -->` tagging |
+| `lib/reformat/format.js` | Per-block formatting (prose, tables, boss cards, stat blocks, shop lists, character sheets, portraits, decorative text) |
 | `lib/reformat/classify.js` | Content classification helpers |
 | `scripts/reformat.js` | Backward-compatible wrapper around `lib/reformat` |
 | `scripts/split-guide.js` | Split large output into mobile-friendly section files; generates achievements.md from achievements.json |
@@ -250,7 +228,6 @@ The converter:
 | `skills/SKILL.md` | opencode agent skill — convert walkthroughs |
 | `skills/retroachievements-skill.md` | opencode agent skill — AI-powered achievement matching |
 | `skills/reformat-review-skill.md` | opencode agent skill — review and fix reformatter edge cases |
-| `skills/art-modernize-skill.md` | opencode agent skill — upgrade ASCII art to HTML components |
 
 ## License
 

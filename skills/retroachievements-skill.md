@@ -283,6 +283,7 @@ in the gamemds repo. Do NOT inject blockquotes into section `.md` files.
       "missable": <true|false>,
       "missableCutoff": "<human-readable cutoff description, only if missable>",
       "missableCutoffSection": "<section number where it becomes unavailable, only if missable>",
+      "ongoing": <true|false, optional — true for achievements completed naturally over the entire playthrough>,
       "section": "<walkthrough section number>",
       "confidence": "<high|medium|low>",
       "notes": "<strategic advice or clarification>",
@@ -296,6 +297,14 @@ in the gamemds repo. Do NOT inject blockquotes into section `.md` files.
   ]
 }
 ```
+
+**Ongoing achievements:** If the achievement can be completed naturally over
+the entire playthrough (cumulative actions like "defeat X enemies," "cast Y
+spells Z times," "open N chests," "walk M steps"), set `"ongoing": true`.
+Place these at the earliest section where the action becomes available, but
+add a note like "Completes naturally over the playthrough — no grinding
+needed." These will appear in the dedicated "Ongoing Achievements" table
+in the checklist instead of cluttering individual sections.
 
 **Type classification:**
 

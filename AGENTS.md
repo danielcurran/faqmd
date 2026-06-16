@@ -18,7 +18,7 @@ This repo contains the **converter tool** and **opencode agent skills** only. Wa
 - `lib/cli.js` — Shared zero-dependency CLI argument parsing helpers
 - `lib/reformat/index.js` — Public reformatting API
 - `lib/reformat/detect.js` — Block-type detection (prose, table, ASCII art, stat block, decorative)
-- `lib/reformat/format.js` — Per-block formatting and `<!-- MODERNIZE:TYPE -->` tagging
+- `lib/reformat/format.js` — Per-block formatting (prose, tables, boss cards, stat blocks, etc.)
 - `lib/reformat/classify.js` — Content classification helpers
 - `scripts/reformat.js` — Backward-compatible wrapper around `lib/reformat`
 - `scripts/test.js` — Standalone test runner (also available as `npm test`)
@@ -30,7 +30,6 @@ This repo contains the **converter tool** and **opencode agent skills** only. Wa
 - `skills/SKILL.md` — opencode agent skill for converting walkthroughs
 - `skills/retroachievements-skill.md` — opencode agent skill for AI-powered achievement matching
 - `skills/reformat-review-skill.md` — opencode agent skill for reviewing reformatter edge cases
-- `skills/art-modernize-skill.md` — opencode agent skill for upgrading ASCII art to HTML components
 - `.gitignore` — Ignores node_modules/, generated walkthrough files, and guide/ (local artifact only)
 
 ## Conventions
@@ -39,7 +38,7 @@ This repo contains the **converter tool** and **opencode agent skills** only. Wa
 - Split output goes in `guide/`: `index.md` + `toc.json` + `meta.json` + one file per section named `<section-num>-<slug>.md`
 - `meta.json` contains `title`, `subtitle`, `author`, `source`, and `attributionHtml` for the gamemds reader app
 - Anchor IDs: replace dots with hyphens, prefix with `s` (e.g., `s6-4-8`)
-- ASCII art wrapped in code blocks; complex art blocks are tagged with `<!-- MODERNIZE:TYPE -->` for the art-modernize agent skill
+- ASCII art wrapped in code blocks; reformatter extracts plain text from boss cards, stat blocks, and shop tables
 - Equipment tables stay in code blocks, not treated as markdown tables
 - TOC appears twice in source (intro + body) — only parse the intro TOC
 - Run `npm test` before committing any change to converter logic, reformatting rules, or skills
@@ -73,6 +72,7 @@ The `achievements.json` schema:
       "missable": <boolean>,
       "missableCutoff": "<cutoff description, if missable>",
       "missableCutoffSection": "<section num, if missable>",
+      "ongoing": <boolean, optional — true for achievements completed naturally over the entire playthrough>,
       "section": "<walkthrough section number>",
       "confidence": "<high|medium|low>",
       "notes": "<clarification or strategic advice>",
@@ -84,7 +84,7 @@ The `achievements.json` schema:
 }
 ```
 
-Fields: `id`, `title`, `description`, `points`, `badgeUrl`, `displayOrder`, `type` (story|missable|collectible|challenge|secret|progress), `missable`, `missableCutoff`, `missableCutoffSection`, `section`, `confidence` (high|medium|low), `notes`, `communityTips` (optional array of `{user, text}`).
+Fields: `id`, `title`, `description`, `points`, `badgeUrl`, `displayOrder`, `type` (story|missable|collectible|challenge|secret|progress), `missable`, `missableCutoff`, `missableCutoffSection`, `ongoing` (optional), `section`, `confidence` (high|medium|low), `notes`, `communityTips` (optional array of `{user, text}`).
 
 The RA Comments API provides player tips for ambiguous achievements:
 ```bash
@@ -117,11 +117,10 @@ in `skills/` first, then run `npm run sync-skills` to copy the changed files to
 | `faqmd` | `skills/SKILL.md` | Convert GameFAQs walkthroughs to markdown |
 | `retroachievements` | `skills/retroachievements-skill.md` | Match RetroAchievements to walkthrough sections |
 | `reformat-review` | `skills/reformat-review-skill.md` | Review and fix reformatter edge cases |
-| `art-modernize` | `skills/art-modernize-skill.md` | Upgrade ASCII art to HTML components |
 
 ## Per-Repo Opencode Config
 
 `.opencode/opencode.json` declares the `build` agent profile. The
-`.opencode/skills/` directory mirrors the four skills above for per-repo
+`.opencode/skills/` directory mirrors the three skills above for per-repo
 discovery. When adding or renaming a skill, update both `skills/` and
 `.opencode/skills/` and run `npm run sync-skills` to update the global copies.
