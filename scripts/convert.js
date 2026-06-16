@@ -3,7 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { reformat } = require('./reformat');
-const { extractText, parseTOC, splitSections, escapeMd, anchorId, detectFormat, parseRomanTOC, splitRomanSections, parseAuthor } = require('../lib/convert-core');
+const { extractText, parseTOC, splitSections, escapeMd, anchorId, detectFormat, parseRomanTOC, splitRomanSections, parseAuthor, parseTitle } = require('../lib/convert-core');
 const { parseArgs, showHelp, validateOutputPath } = require('../lib/cli');
 
 const SCRIPT_NAME = 'faqmd';
@@ -114,9 +114,10 @@ async function main() {
     process.exit(1);
   }
 
+  const gameTitle = titleOverride || parseTitle(html) || sections[0]?.title || 'Walkthrough';
   const author = authorOverride || parseAuthor(html, text) || 'Unknown Author';
 
-  let md = '# ' + (titleOverride || sections[0]?.title || 'Walkthrough') + '\n\n';
+  let md = '# ' + gameTitle + '\n\n';
   md += '> By ' + author + ' — Converted from GameFAQs\n\n';
   md += '## Table of Contents\n\n';
   for (const s of sections) {
