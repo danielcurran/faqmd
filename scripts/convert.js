@@ -3,7 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { reformat } = require('./reformat');
-const { extractText, parseTOC, splitSections, escapeMd, anchorId, detectFormat, parseRomanTOC, splitRomanSections, parseBracketTOC, splitBracketSections, parseAuthor, parseTitle } = require('../lib/convert-core');
+const { extractText, parseTOC, splitSections, escapeMd, anchorId, detectFormat, parseRomanTOC, splitRomanSections, parseBracketTOC, splitBracketSections, parseArrowTOC, splitBoxSections, parsePlainTOC, splitPlainSections, parseAuthor, parseTitle } = require('../lib/convert-core');
 const { parseArgs, showHelp, validateOutputPath } = require('../lib/cli');
 
 const SCRIPT_NAME = 'faqmd';
@@ -99,6 +99,36 @@ async function main() {
       process.exit(1);
     }
     sections = splitRomanSections(text, toc);
+    const matchPct = toc.length > 0 ? Math.round(sections.length / toc.length * 100) : 0;
+    console.log('Split into ' + sections.length + ' sections (' + matchPct + '% of TOC matched)');
+    if (sections.length === 0) {
+      console.log('WARNING: no sections extracted — check GameFAQs page format');
+    }
+  } else if (format === 'plain') {
+    toc = parsePlainTOC(text);
+    const tocWarning = toc.length === 0 ? ' (WARNING: no TOC entries parsed)' : '';
+    console.log('Detected plain-number format');
+    console.log('Found ' + toc.length + ' sections' + tocWarning);
+    if (toc.length === 0) {
+      console.error('Error: no TOC entries parsed — input does not appear to be a GameFAQs walkthrough');
+      process.exit(1);
+    }
+    sections = splitPlainSections(text, toc);
+    const matchPct = toc.length > 0 ? Math.round(sections.length / toc.length * 100) : 0;
+    console.log('Split into ' + sections.length + ' sections (' + matchPct + '% of TOC matched)');
+    if (sections.length === 0) {
+      console.log('WARNING: no sections extracted — check GameFAQs page format');
+    }
+  } else if (format === 'arrow') {
+    toc = parseArrowTOC(text);
+    const tocWarning = toc.length === 0 ? ' (WARNING: no TOC entries parsed)' : '';
+    console.log('Detected arrow-bracket format');
+    console.log('Found ' + toc.length + ' sections' + tocWarning);
+    if (toc.length === 0) {
+      console.error('Error: no TOC entries parsed — input does not appear to be a GameFAQs walkthrough');
+      process.exit(1);
+    }
+    sections = splitBoxSections(text, toc);
     const matchPct = toc.length > 0 ? Math.round(sections.length / toc.length * 100) : 0;
     console.log('Split into ' + sections.length + ' sections (' + matchPct + '% of TOC matched)');
     if (sections.length === 0) {
