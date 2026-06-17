@@ -17,6 +17,9 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Generate walkthrough.md
+        run: node scripts/convert.js
+
       - name: Run tests
         run: npm test
 
