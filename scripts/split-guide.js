@@ -323,13 +323,15 @@ function generateAchievementsMd(outputDir) {
   const toc = JSON.parse(fs.readFileSync(tocPath, 'utf8'));
 
   const sectionTitles = {};
-  function collectTitles(nodes) {
+  const sectionFiles = {};
+  function collectTocData(nodes) {
     for (const n of nodes) {
       if (n.num && n.title) sectionTitles[n.num] = n.title;
-      if (n.children) collectTitles(n.children);
+      if (n.num && n.file) sectionFiles[n.num] = n.file;
+      if (n.children) collectTocData(n.children);
     }
   }
-  collectTitles(toc);
+  collectTocData(toc);
 
   const medal = pts => pts >= 25 ? '🏅' : pts >= 10 ? '🥈' : '🥉';
 
@@ -365,9 +367,13 @@ function generateAchievementsMd(outputDir) {
     lines.push('| Achievement | Pts | Earn In | Cutoff | Tip |');
     lines.push('|---|---|---|---|---|');
     for (const a of missables) {
-      const earnLink = `[${a.section}](#${anchorId(a.section)})`;
-      const cutoffLink = a.missableCutoffSection
-        ? `[${a.missableCutoffSection}](#${anchorId(a.missableCutoffSection)}) ${a.missableCutoff || ''}`
+      const earnFile = sectionFiles[a.section];
+      const earnLink = earnFile
+        ? `[${a.section}](${earnFile}#${anchorId(a.section)})`
+        : `[${a.section}](#${anchorId(a.section)})`;
+      const cutoffFile = a.missableCutoffSection ? sectionFiles[a.missableCutoffSection] : null;
+      const cutoffLink = a.missableCutoffSection && cutoffFile
+        ? `[${a.missableCutoffSection}](${cutoffFile}#${anchorId(a.missableCutoffSection)}) ${a.missableCutoff || ''}`
         : a.missableCutoff || 'Unknown';
       const tip = a.notes || '';
       lines.push(`| ${medal(a.points)} ${a.title} | ${a.points} | ${earnLink} | ${cutoffLink} | ${tip} |`);
@@ -383,7 +389,10 @@ function generateAchievementsMd(outputDir) {
     lines.push('| Achievement | Pts | Available From | Tip |');
     lines.push('|---|---|---|---|');
     for (const a of ongoing) {
-      const availLink = `[${a.section}](#${anchorId(a.section)})`;
+      const availFile = sectionFiles[a.section];
+      const availLink = availFile
+        ? `[${a.section}](${availFile}#${anchorId(a.section)})`
+        : `[${a.section}](#${anchorId(a.section)})`;
       const tip = a.notes || '';
       lines.push(`| ${medal(a.points)} ${a.title} | ${a.points} | ${availLink} | ${tip} |`);
     }
@@ -412,9 +421,10 @@ function generateAchievementsMd(outputDir) {
     num: '0.1',
     title: 'Achievement Checklist',
     file: 'achievements.md',
-    depth: 0,
+depth: 1,
     children: []
   };
+
   toc.unshift(checklistEntry);
   fs.writeFileSync(tocPath, JSON.stringify(toc, null, 2));
 

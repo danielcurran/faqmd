@@ -30,6 +30,7 @@ This repo contains the **converter tool** and **opencode agent skills** only. Wa
 - `skills/SKILL.md` — opencode agent skill for converting walkthroughs
 - `skills/retroachievements-skill.md` — opencode agent skill for AI-powered achievement matching
 - `skills/reformat-review-skill.md` — opencode agent skill for reviewing reformatter edge cases
+- `skills/live-review-skill.md` — opencode agent skill for final QA on split guide directories
 - `.gitignore` — Ignores node_modules/, generated walkthrough files, and guide/ (local artifact only)
 
 ## Conventions
@@ -117,10 +118,11 @@ in `skills/` first, then run `npm run sync-skills` to copy the changed files to
 | `faqmd` | `skills/SKILL.md` | Convert GameFAQs walkthroughs to markdown |
 | `retroachievements` | `skills/retroachievements-skill.md` | Match RetroAchievements to walkthrough sections |
 | `reformat-review` | `skills/reformat-review-skill.md` | Review and fix reformatter edge cases |
+| `live-review` | `skills/live-review-skill.md` | Final QA on split guide directories |
 
 ## Per-Repo Opencode Config
 
 `.opencode/opencode.json` declares the `build` agent profile. The
-`.opencode/skills/` directory mirrors the three skills above for per-repo
+`.opencode/skills/` directory mirrors the four skills above for per-repo
 discovery. When adding or renaming a skill, update both `skills/` and
 `.opencode/skills/` and run `npm run sync-skills` to update the global copies.
