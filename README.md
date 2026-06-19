@@ -49,35 +49,32 @@ This creates a `guide/` directory with `index.md` + one file per section.
 
 ## opencode Agent Skills
 
-Three agent skills are included for use with [opencode](https://opencode.ai).
+Four agent skills are included for use with [opencode](https://opencode.ai).
+Install all skills with one command:
+
+```bash
+npm run sync-skills
+```
+
+This copies all skill files to `~/.config/opencode/skills/` so they are
+available globally. Per-repo copies in `.opencode/skills/` are already
+included.
 
 ### faqmd — Convert walkthroughs
 
-Install the skill:
-
-```bash
-mkdir -p ~/.config/opencode/skills/faqmd
-cp skills/SKILL.md ~/.config/opencode/skills/faqmd/SKILL.md
-```
-
-Then in opencode, paste a GameFAQs print URL and ask:
+In opencode, paste a GameFAQs print URL and ask:
 
 ```
 "convert this gamefaqs walkthrough https://gamefaqs.gamespot.com/..."
 ```
+
+The agent runs `node scripts/convert.js` to fetch, parse, and reformat the walkthrough.
 
 ### retroachievements — Match achievements to sections
 
 Add achievement data to a walkthrough using the **retroachievements** opencode
 agent skill. Due to its complexity (LLM-powered matching with manual review),
 this is handled by the skill rather than a standalone script.
-
-Install the skill:
-
-```bash
-mkdir -p ~/.config/opencode/skills/retroachievements
-cp skills/retroachievements-skill.md ~/.config/opencode/skills/retroachievements/SKILL.md
-```
 
 Set up credentials:
 
@@ -126,14 +123,18 @@ Reviews and fixes edge cases in the reformatted walkthrough:
 - Broken or misaligned tables
 - Walkthrough steps that should be bullet lists
 
-Install:
-
-```bash
-mkdir -p ~/.config/opencode/skills/reformat-review
-cp skills/reformat-review-skill.md ~/.config/opencode/skills/reformat-review/SKILL.md
-```
-
 Usage: `"Run reformat-review on walkthrough.md"`
+
+### live-review — Final QA on split guides
+
+Verifies structural integrity of split guide directories before publishing:
+
+- Checks all internal anchor links (cross-section and TOC)
+- Validates every toc.json entry has a corresponding section file
+- Confirms navigation (prev/next links) is complete
+- Inspects section file naming and frontmatter
+
+Usage: `"Run live-review on guide/"`
 
 ---
 
@@ -186,14 +187,19 @@ git add -A && git commit -m "add walkthrough" && git push
 
 ## How It Works
 
-GameFAQs print pages (`?print=1`) are highly consistent:
+GameFAQs walkthroughs use several formats. The converter auto-detects the format
+then parses accordingly:
 
-1. **ASCII art header** — title art and dividers
-2. **Table of Contents** — section numbers → 4-letter search codes
-3. **Section body** — each section starts with `***\nTitle\n***` and includes
-   its code prefixed with `C` (e.g. `CLVTW`)
+| Format | Section markers |
+|---|---|
+| **standard** | 4-letter CCODE headers (most common) |
+| **roman** | `+=====+` boxed headers with roman numerals |
+| **plain** | `***` asterisk dividers with dotted numbers |
+| **arrow** | `-> Title [XXX.NNN]` arrow-bracket headers |
+| **bracket** | `[CCODE]` markers with underscore separators |
+| **dash** | `=====`/`-----` delimited sections with indentation-based TOC |
 
-The converter:
+Once the format is detected, the converter:
 
 1. **Fetches** the `?print=1` page
 2. **Extracts** text from `<pre>` tags
@@ -217,13 +223,16 @@ The converter:
 | `lib/reformat/classify.js` | Content classification helpers |
 | `scripts/reformat.js` | Backward-compatible wrapper around `lib/reformat` |
 | `scripts/split-guide.js` | Split large output into mobile-friendly section files; generates achievements.md from achievements.json |
+| `scripts/fetch-achievements.js` | Fetch RetroAchievements data for a game ID, optionally with Comments API data |
+| `scripts/validate-achievements.js` | Validate achievements.json schema and cross-reference sections against toc.json |
 | `scripts/test.js` | Standalone test runner (run via `npm test`) |
 | `scripts/raw.txt` | Cached GameFAQs walkthrough for offline testing |
-| `package.json` | Defines `npm test`, `npm run convert`, and the Node engine requirement |
+| `package.json` | Defines `npm test`, `npm run convert`, `npm run sync-skills`, and Node engine requirement |
 | `.github/workflows/test.yml` | CI — runs `npm test` on push/PR |
 | `skills/SKILL.md` | opencode agent skill — convert walkthroughs |
 | `skills/retroachievements-skill.md` | opencode agent skill — AI-powered achievement matching |
 | `skills/reformat-review-skill.md` | opencode agent skill — review and fix reformatter edge cases |
+| `skills/live-review-skill.md` | opencode agent skill — final QA on split guide directories |
 
 ## Contributing
 

@@ -45,6 +45,26 @@ This repo contains the **converter tool** and **opencode agent skills** only. Wa
 - Run `npm test` before committing any change to converter logic, reformatting rules, or skills
 - Do not commit generated `walkthrough.md`, `guide/`, or `node_modules/`
 
+## Adding New Formats
+
+When `detectFormat()` returns `"unknown"` for a walkthrough, add the new format
+to `lib/convert-core.js` so future conversions of that type work automatically.
+Never write a one-off custom script.
+
+**Pattern for each new format:**
+
+1. **Detection** — Add a regex to `detectFormat()` that uniquely identifies the
+   format's section delimiter pattern (before the `return 'unknown'` fallback)
+2. **TOC parser** — `parseXxxTOC(text)` → `[{ num, title, code?, level }]`
+3. **Section splitter** — `splitXxxSections(text, tocEntries)` → `[{ num, title, level, content }]`
+4. **Export** — Add both functions to `module.exports` in `convert-core.js`
+5. **Registry** — Add to the `FORMATS` object in `scripts/convert.js` with `parse`, `split`, and `label`
+6. **Tests** — Add tests to `scripts/test.js` for detection, TOC parsing, and section splitting
+7. **Verify** — Run `npm test`
+
+See the existing formats (roman, plain, arrow, bracket, dash) in `lib/convert-core.js`
+as examples. Each format is self-contained with its own parse and split functions.
+
 ## RetroAchievements Integration
 
 `split-guide.js` optionally reads `achievements.json` from the output directory and generates:

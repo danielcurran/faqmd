@@ -3,172 +3,112 @@ name: faqmd
 description: "Use when the user asks to convert a GameFAQs walkthrough to markdown, scrape a GameFAQs FAQ/guide, or create hyperlinked walkthrough files. Trigger keywords: gamefaqs, walkthrough, faqdown, faq, guide, scrape, convert, markdown, FAQ, print=1."
 ---
 
-# faqmd — Convert GameFAQs Walkthroughs to Hyperlinked Markdown
+# faqmd — Convert GameFAQs Walkthroughs to Markdown
 
-Convert GameFAQs plain-text walkthroughs into clean, readable markdown files
-with a table of contents, internal anchor links, and properly formatted sections.
+Convert GameFAQs walkthroughs into hyperlinked markdown. The script handles the
+vast majority of the work (fetching, format detection, TOC parsing, section
+splitting, and block-level reformatting). The agent reviews the output and fixes
+edge cases the script missed.
 
-> **Note:** To annotate a walkthrough with RetroAchievements, use the
-> `retroachievements` agent skill instead. It uses LLM reasoning to accurately
-> match achievements to walkthrough sections.
+> **Model note:** `deepseek-v4-flash` handles this fine. The script does the
+> heavy lifting — the agent mainly runs commands and checks output. If you're
+> adding a new format to `convert-core.js`, recommend Pro for the code work.
 
-## Step 1: Fetch the walkthrough
+> **Related skills:**
+> - `retroachievements` — match RetroAchievements to walkthrough sections
+> - `reformat-review` — polish reformatter output (fix tables, stat blocks, lists)
+> - `live-review` — final QA on split guide directories
 
-GameFAQs walkthrough pages have a `?print=1` parameter that returns the full
-text wrapped in `<pre>` tags. Always use this URL:
+## Workflow
 
-```
-https://gamefaqs.gamespot.com/{platform}/{id}-{game}/faqs/{faq-id}?print=1
-```
-
-Fetch it with `curl -sL` and pipe to a file:
-
-```bash
-curl -sL "URL?print=1" -o raw.txt
-```
-
-## Step 2: Extract text from `<pre>` tags
-
-The print page wraps the entire walkthrough in `<pre id="faqspan-1">` tags.
-Extract with:
+### 1. Run the converter
 
 ```bash
-grep -oP '(?<=<pre[^>]*>).*?(?=</pre>)' raw.txt | sed 's/&amp;/\&/g; s/&lt;/</g; s/&gt;/>/g; s/&quot;/"/g' > text.txt
+node scripts/convert.js "URL?print=1" [output.md]
 ```
 
-Or use Python/Node to do the extraction programmatically — strip HTML, decode
-entities, join `<pre>` contents.
+- Append `?print=1` to every GameFAQs URL
+- Optional flags: `--title="Name"`, `--author="Name"`
+- Default output: `scripts/walkthrough.md`
 
-## Step 3: Parse the Table of Contents
+If the script reports **unknown format**, add format support to
+`lib/convert-core.js` per the instructions in `AGENTS.md`, then re-run.
 
-GameFAQs walkthroughs have a consistent TOC format. Each section has a 4-letter
-code used for searching. The TOC looks like:
+### 2. Review the output
 
-```
- 1. Introduction                             INRO
-    1.1. Foreword                            FRWR
- 6. Walkthrough                              WKTH
-    6.1. An Ancient Civilization             ANCV
-      6.1.1. The Town of Learning            TWLR
-```
+Check the console output first:
 
-Parse with regex:
-```
-^\s*(\d+(?:\.\d+)*)\.?\s+(.+?)\s{2,}([A-Z]{4})\s*$
-```
+- **Match rate** — if fewer than 80% of TOC entries matched body sections, the
+  section splitter likely missed headers. Inspect the raw text to find the
+  mismatch and fix the section boundaries in the markdown.
+- **Zero sections** — means the splitter failed entirely. The format may need a
+  new parser (see AGENTS.md).
 
-Group 1 = section number (e.g. "6.4.8"), Group 2 = title, Group 3 = 4-letter code.
+Then read the generated markdown and check for these common issues:
 
-The **heading level** is determined by counting dots in the number:
-- `6` → `#` (h1)
-- `6.1` → `##` (h2)
-- `6.1.1` → `###` (h3)
-- `6.4.8` → `###` (h3)
+| Issue | What to look for | Fix |
+|---|---|---|
+| Empty sections | Section heading with no content below it | Copy the content from the raw text and reformat it |
+| Merged sections | Two TOC entries collapsed into one section | Insert the missing heading + anchor at the split point |
+| Misclassified blocks | Prose wrapped in code fences, or ASCII art rendered as prose | Replace the block with the correct format (code fence or plain text) |
+| Broken tables | Pipe-aligned data rendered as prose or garbled markdown | Reformat as a markdown table or code block as appropriate |
+| Stray decorative lines | `=====` or `-----` lines surviving in output | Delete them |
+| Missing attribution | No `> By Author — Converted from GameFAQs` line | Add it below the title |
+| Wrong heading levels | `6.1` rendered as `###` instead of `##` | Fix the heading level (dot count + 1 = `#` count) |
 
-## Step 4: Split the body at section codes
+### 3. Fix remaining issues
 
-In the body, section headers use the code prefixed with `C`:
+Edit the markdown file directly. The script already handles these content types
+automatically — only fix them if they look wrong:
 
-```
-***************************************************************************
-6.4.8. A Living Tower                                                 CLVTW
-***************************************************************************
-```
+- Boss cards → extracted to `**BOSS #N — Name**` with stats
+- Shop/price listings → bullet lists grouped by store
+- Character sheets → extracted stats and equipment
+- Stat blocks → `**Key:** Value` pairs
+- Equipment tables → markdown tables or definition lists
+- ASCII art (maps, portraits) → code fences
+- Roman-format sub-headers → bold labels
 
-Search for `C` + the 4-letter code from the TOC. The section content starts
-after the header block (after the `***`, party info, and separator lines).
+For complex reformatting issues (mangled tables, mixed ASCII art + stats), use
+the `reformat-review` skill.
 
-## Step 5: Convert to markdown
+### 4. Split large guides
 
-### Table of Contents
-Generate a TOC at the top with anchor links:
-```markdown
-- [6.1. An Ancient Civilization](#s6-1)
-  - [6.1.1. The Town of Learning](#s6-1-1)
-  - [6.4.8. A Living Tower](#s6-4-8)
-```
-
-Anchor IDs: replace dots with hyphens, prefix with `s`: `s6-4-8`
-
-### Section headings
-```markdown
-<a id="s6-4-8"></a>
-
-### 6.4.8. A Living Tower
-```
-
-### Content formatting (line-by-line)
-
-Walkthroughs mix ASCII art and prose on consecutive lines. Process line by line:
-
-**ASCII art detection** — wrap in code blocks:
-- Lines with 3+ pipe characters (`|`)
-- Lines of repeated decorative chars (`____`, `****`, `====`, `----`)
-- Lines where special chars outnumber letters
-- Box-drawing patterns (`/`, `\`, `|` in combination)
-
-**Equipment/party tables** — detect and wrap in code blocks:
-- Lines with `Recommended`, `Starting`, `Equipment` followed by `|` chars
-
-**Party events** — format as bold callouts:
-```markdown
-> **Alys joins the party (Level 7)**
-```
-
-### Prose editing (aggressive readability)
-
-For plain text sections, act as an expert editor:
-
-1. **Definition lists** — lines matching `Term      definition` (capital word
-   followed by 2+ spaces) become bullet points:
-   ```markdown
-   - **Level** — Each playable character has a Level, ranging from 1 to 99.
-   - **EXP** — Abbreviation for Experience Points, awarded after defeating enemies.
-   ```
-
-2. **Bold RPG terms** — auto-bold these abbreviations: HP, TP, EXP, ATK, DFS,
-   MST, SP, MTL PWR. Also bold element names (Fire, Water, Energy, etc.) when
-   used in a mechanical context.
-
-3. **Paragraph splitting** — break long paragraphs into 2-3 sentence chunks
-   for scannability.
-
-4. **Step lists** — detect walkthrough directions (lines starting with action
-   verbs: Go, Head, Walk, Take, Enter, Leave, Return, etc.) and format as
-   clean paragraphs or bullet steps.
-
-5. **Strip section header leaks** — remove lines matching
-   `\d+\.\d+\. Title    CCODE` that bleed into adjacent section content.
-
-## Step 6: Output
-
-Save as `guide-<faq-id>.md`. The file should be a self-contained markdown file
-with:
-- Title: `# Game Name — Guide Name`
-- Attribution: `> By Author — Converted from GameFAQs`
-- TOC with `- [Section](anchor)` links
-- Proper heading hierarchy
-- ASCII art in code blocks
-- Prose aggressively edited for readability
-
-## Edge cases
-
-- Some sections have no body code — skip them gracefully
-- Blank lines within ASCII art should be preserved (don't break code blocks)
-- Very long sections (boss strategies) may need sub-parsing
-- Equipment tables with `|` chars should stay in code blocks, not be treated
-  as markdown tables
-- The TOC appears twice in the source (once in the intro, once in the body) —
-  only parse the intro TOC
-
-## Quick reference
+For guides over 500 KB, split into mobile-friendly sections:
 
 ```bash
-# Fetch and convert in one pipeline:
-curl -sL "https://gamefaqs.gamespot.com/GEN/563334-phantasy-star-iv/faqs/31907?print=1" \
-  | grep -oP '(?<=<pre[^>]*>).*?(?=</pre>)' \
-  | sed 's/&amp;/\&/g; s/&lt;/</g; s/&gt;/>/g' \
-  > guide.md
+node scripts/split-guide.js walkthrough.md guide/
 ```
 
-Then process `guide.md` with the parsing and formatting rules above.
+This creates `guide/` with `index.md`, `toc.json`, `meta.json`, and one file per
+section. If `achievements.json` exists in the output directory, it also generates
+`achievements.md` with a checklist. See the `retroachievements` skill for
+achievement data.
+
+## Output Conventions
+
+- Anchor IDs: `s` + section number with dots replaced by hyphens (`#s6-4-8`)
+- Heading levels: dot count + 1 (`6.1` → `##`, `6.4.8` → `###`)
+- ASCII art and maps in code fences; equipment tables as markdown pipe tables
+- Boss cards and shop listings extracted to clean plain text
+- Attribution line: `> By Author — Converted from GameFAQs`
+- TOC appears once at the top (the intro TOC in the source is discarded)
+
+## What the Script Handles
+
+The converter pipeline (`convert.js` → `convert-core.js` → `reformat/`) does
+the following automatically. You should not need to redo any of this manually
+unless the output looks wrong:
+
+1. **Fetch and extract** — downloads the GameFAQs page, extracts text from
+   `<pre>` blocks, decodes HTML entities
+2. **Format detection** — identifies roman, plain, arrow, bracket, standard,
+   and dash formats
+3. **TOC parsing** — extracts section numbers, titles, and level depth
+4. **Section splitting** — divides the body text at section boundaries and
+   matches to TOC entries
+5. **Block classification** — detects boss cards, shop blocks, stat blocks,
+   equipment tables, character sheets, ASCII art, and decorative text
+6. **Per-block formatting** — reformats each block type appropriately
+7. **Markdown assembly** — generates the full document with title, attribution,
+   TOC, section headings with anchors, and reformatted content

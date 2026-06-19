@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { extractText, parseTOC, splitSections, escapeMd, anchorId, detectFormat, romanToInt, parseRomanTOC, splitRomanSections } = require('../lib/convert-core');
+const { extractText, parseTOC, splitSections, escapeMd, anchorId, detectFormat, romanToInt, parseRomanTOC, splitRomanSections, parseDashTOC, splitDashSections } = require('../lib/convert-core');
 const {
   reformat, reformatBlock, formatProse, formatStatBlock, formatDecorativeText,
   classifyArtBlock, formatEquipmentTable, formatBossCard,
@@ -439,15 +439,15 @@ assert('e2e: walkthrough.md exists', () => {
 assert('e2e: walkthrough.md has expected sections', () => {
   const p = path.join(__dirname, 'walkthrough.md');
   const md = fs.readFileSync(p, 'utf8');
-  if (!md.includes('### 15.1.1. Igglanova 1')) throw new Error('Missing Igglanova 1 section');
+  if (!md.includes('### 7.4.4. Final. Return to Crysta')) throw new Error('Missing Final section');
   if (!md.includes('## Table of Contents')) throw new Error('Missing Table of Contents');
-  if (!md.includes('6.1.1. The Town of Learning')) throw new Error('Missing nested section heading');
+  if (!md.includes('7.1.1. Apologize for your mischief')) throw new Error('Missing nested section heading');
 });
 
 assert('e2e: walkthrough.md is substantial', () => {
   const p = path.join(__dirname, 'walkthrough.md');
   const stat = fs.statSync(p);
-  if (stat.size < 500000) throw new Error('File too small: ' + stat.size + ' bytes');
+  if (stat.size < 100000) throw new Error('File too small: ' + stat.size + ' bytes');
 });
 
 // ── Roman-numeral format: romanToInt ──
@@ -1006,6 +1006,201 @@ assert('reformat: handles empty input', () => {
 assert('reformat: handles whitespace-only input', () => {
   const r = reformat('   \n\n  \n   ');
   if (r !== '') throw new Error('Expected empty string for whitespace input, got: ' + JSON.stringify(r));
+});
+
+// ── Dash format: detectFormat ──
+assert('detectFormat: detects dash format with ===== and -----', () => {
+  const text = '=====================\nVersion Updates\n=====================\n\n---------------------\nController\n---------------------\n';
+  if (detectFormat(text) !== 'dash') throw new Error('Should detect dash format');
+});
+
+assert('detectFormat: does not false-positive standard format as dash', () => {
+  const text = '1. Intro                             CINRO\nCWALK\n';
+  if (detectFormat(text) !== 'standard') throw new Error('Should detect standard, not dash');
+});
+
+assert('detectFormat: does not false-positive roman format as dash', () => {
+  const text = '+====================================+\n| i. Title |\n+======+\n';
+  if (detectFormat(text) !== 'roman') throw new Error('Should detect roman, not dash');
+});
+
+// ── Dash format: parseDashTOC ──
+assert('parseDashTOC: parses indentation-based TOC', () => {
+  const tocText = [
+    '=================',
+    'Table of contents',
+    '=================',
+    '',
+    '  Version Updates',
+    '',
+    '  FAQ',
+    '',
+    '  Controls',
+    '     Controller',
+    '     Statistics',
+    '',
+    '  Walkthrough',
+    '    Chapter 1: The Outset',
+    '       1. Apologize for your mischief',
+    '       2. The trials of the 5 towers',
+    '    Chapter 2: Resurrection of the World',
+    '       1. Save the Ra Tree',
+    '',
+    '=====================',
+    'Version Updates',
+    '=====================',
+  ].join('\n');
+
+  const toc = parseDashTOC(tocText);
+  if (toc.length < 10) throw new Error('Expected at least 10 entries, got ' + toc.length);
+  if (toc[0].title !== 'Version Updates') throw new Error('First entry should be Version Updates, got: ' + toc[0].title);
+  if (toc[0].level !== 1) throw new Error('Version Updates should be level 1');
+});
+
+assert('parseDashTOC: assigns correct levels and numbering', () => {
+  const tocText = [
+    '=================',
+    'Table of contents',
+    '=================',
+    '',
+    '  Controls',
+    '     Controller',
+    '     Statistics',
+    '',
+    '=====================',
+    'Controls',
+    '=====================',
+  ].join('\n');
+
+  const toc = parseDashTOC(tocText);
+  if (toc.length < 3) throw new Error('Expected at least 3 entries, got ' + toc.length);
+  if (toc[0].num !== '1' || toc[0].level !== 1) throw new Error('Controls should be 1/level1, got: ' + JSON.stringify(toc[0]));
+  if (toc[1].num !== '1.1' || toc[1].level !== 2) throw new Error('Controller should be 1.1/level2, got: ' + JSON.stringify(toc[1]));
+  if (toc[2].num !== '1.2' || toc[2].level !== 2) throw new Error('Statistics should be 1.2/level2, got: ' + JSON.stringify(toc[2]));
+});
+
+assert('parseDashTOC: handles Chapter N: pattern', () => {
+  const tocText = [
+    '=================',
+    'Table of contents',
+    '=================',
+    '',
+    '  Walkthrough',
+    '    Chapter 1: The Outset',
+    '       1. First step',
+    '       2. Second step',
+    '    Chapter 2: Next Chapter',
+    '       1. Another step',
+    '',
+    '=====================',
+    'Walkthrough',
+    '=====================',
+  ].join('\n');
+
+  const toc = parseDashTOC(tocText);
+  const chapter1 = toc.find(e => e.title === 'The Outset');
+  if (!chapter1) throw new Error('Should find Chapter 1 entry');
+  if (chapter1.level !== 2) throw new Error('Chapter 1 should be level 2, got: ' + chapter1.level);
+});
+
+// ── Dash format: splitDashSections ──
+assert('splitDashSections: splits at ===== and ----- boundaries', () => {
+  const text = [
+    '=====================',
+    'Version Updates',
+    '=====================',
+    '',
+    'Version 1.0 content here.',
+    '',
+    '=====================',
+    'Controls',
+    '=====================',
+    '',
+    '---------------------',
+    'Controller',
+    '---------------------',
+    '',
+    'Controller content here.',
+    '',
+    '---------------------',
+    'Statistics',
+    '---------------------',
+    '',
+    'Statistics content here.',
+  ].join('\n');
+
+  const toc = [
+    { num: '1', title: 'Version Updates', level: 1 },
+    { num: '2', title: 'Controls', level: 1 },
+    { num: '2.1', title: 'Controller', level: 2 },
+    { num: '2.2', title: 'Statistics', level: 2 },
+  ];
+
+  const sections = splitDashSections(text, toc);
+  if (sections.length !== 4) throw new Error('Expected 4 sections, got ' + sections.length);
+  if (sections[0].title !== 'Version Updates') throw new Error('First section should be Version Updates');
+  if (!sections[0].content.includes('Version 1.0')) throw new Error('Version Updates content missing');
+  if (sections[2].title !== 'Controller') throw new Error('Third section should be Controller');
+  if (!sections[2].content.includes('Controller content')) throw new Error('Controller content missing');
+});
+
+assert('splitDashSections: unmatched sub-headers stay as content', () => {
+  const text = [
+    '=====================',
+    'Walkthrough',
+    '=====================',
+    '',
+    '---------------------',
+    'Chapter 1',
+    '---------------------',
+    '',
+    '--Crysta--',
+    'Some walkthrough content.',
+    '',
+    '---------------------',
+    'Mini-Boss: Red Huball',
+    '---------------------',
+    '',
+    'Boss fight content.',
+  ].join('\n');
+
+  const toc = [
+    { num: '1', title: 'Walkthrough', level: 1 },
+    { num: '1.1', title: 'Chapter 1', level: 2 },
+  ];
+
+  const sections = splitDashSections(text, toc);
+  // Walkthrough and Chapter 1 become sections; Mini-Boss stays as content
+  if (sections.length !== 2) throw new Error('Expected 2 sections, got ' + sections.length);
+  if (!sections[1].content.includes('--Crysta--')) throw new Error('Chapter 1 should contain --Crysta--');
+  // Mini-Boss wrapped in ----- stays as content (not a section) because unmatched
+  if (!sections[1].content.includes('Mini-Boss')) throw new Error('Chapter 1 should contain Mini-Boss as content');
+});
+
+assert('splitDashSections: matches sections to TOC entries by title', () => {
+  const text = [
+    '=====================',
+    'FAQ',
+    '=====================',
+    '',
+    'FAQ content here.',
+    '',
+    '=====================',
+    'Controls',
+    '=====================',
+    '',
+    'Controls content here.',
+  ].join('\n');
+
+  const toc = [
+    { num: '1', title: 'FAQ', level: 1 },
+    { num: '2', title: 'Controls', level: 1 },
+  ];
+
+  const sections = splitDashSections(text, toc);
+  if (sections.length !== 2) throw new Error('Expected 2 sections, got ' + sections.length);
+  if (sections[0].num !== '1') throw new Error('First section should have num 1');
+  if (sections[1].num !== '2') throw new Error('Second section should have num 2');
 });
 
 // ── Summary ──
